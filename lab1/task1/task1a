@@ -1,0 +1,21 @@
+#include <stdio.h>
+#include <string.h>
+
+int main(int argc, char **argv) {
+    FILE *outputFileStream = stdout;
+    FILE *inputFileStream = stdin;
+    char c =0;
+
+    outputFileStream = fopen(argv[i] + 2, "w");
+    inputFileStream = fopen(argv[i] + 2, "r");
+
+
+    while((c = fgetc(inputFileStream)) !=EOF ()){
+        if( 'A' <= c && c >= 'Z')
+            c = 46; 
+        fputs(outputFileStream , c);
+    }
+    fclose(outputFileStream);
+    fclose(inputFileStream);
+
+}
