@@ -6,13 +6,13 @@ int main(int argc, char **argv) {
     //FILE *outputFile = stdout;
     FILE *inputFile = stdin;
     char c =0;
-    bool  runningDebug = false;
+    bool runningDebug = false;
     bool encoderFlag = false;
     int plusMinusCase = 1;
-    char encoder = 0;
-    //char incoderChar =0;
-    char* output = "";
+    char* encoder = 0;
+    char incoderChar =0;
     int lettersChaged = 0;
+
 
 
 
@@ -21,15 +21,16 @@ int main(int argc, char **argv) {
             runningDebug = true;
         
         else if(strncmp(argv[i], "-e",2) ==0){
-            encoder = (int) argv[i] + 2;
+            encoder =  argv[i] + 2;
             encoderFlag = true;
             plusMinusCase = -1;
         }
         
         else if(strncmp(argv[i], "+e",2) ==0){
-            encoder = (int) argv[i] + 2;
+            encoder =  argv[i] + 2;
             encoderFlag = true;
         }
+
         // else if (strncmp(argv[i], "-o", 2) == 0){
         //     outputFile = fopen(argv[i] + 2, "w");
         // }
@@ -44,18 +45,27 @@ int main(int argc, char **argv) {
     //     }
     //     fprintf (stderr, " ");
     // }
+
+
     if(encoderFlag){
-        while((c = fgetc(inputFile)) != EOF){        //not adding first chares encoder amount of times
-        if (encoderFlag && plusMinusCase == -1 && encoder >0)
-                encoder = encoder -1;
+        if (*encoder < 58)
+            *encoder = *encoder - 48;
         else
-            strcat(output, &c);
+            *encoder = *encoder - 55;
+        while((c = fgetc(inputFile)) != EOF){        //not adding first chares encoder amount of times
+            if (incoderChar == 0)
+                incoderChar = c;   
+            if (encoderFlag && plusMinusCase == -1 && (*encoder >0)){
+                *encoder = *encoder -1;
+            }
+            else
+                printf("%c", c);
         }
 
-        while ( plusMinusCase ==1 && encoder >0)      //adding the fisrt char encoder amount of times
+        while ( plusMinusCase ==1 && (*encoder >0))      //adding the fisrt char encoder amount of times
         {
-            strcat(output, &output[0]);
-            encoder--;
+            printf("%c", incoderChar);
+            *encoder = *encoder -1;
         }   
     }
 
