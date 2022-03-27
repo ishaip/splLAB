@@ -44,20 +44,19 @@ int main(int argc, char **argv) {
     //     }
     //     fprintf (stderr, " ");
     // }
-    fprintf(stderr, " me");
-    if (encoderFlag){
+    if(encoderFlag){
         while((c = fgetc(inputFile)) != EOF){        //not adding first chares encoder amount of times
-            if (encoderFlag && plusMinusCase == -1 && encoder >0)
-                    encoder = encoder -1;
-            else
-                strcat(output, &c);
+        if (encoderFlag && plusMinusCase == -1 && encoder >0)
+                encoder = encoder -1;
+        else
+            strcat(output, &c);
         }
 
-        while (plusMinusCase ==1 && encoder >0)      //adding the fisrt char encoder amount of times
+        while ( plusMinusCase ==1 && encoder >0)      //adding the fisrt char encoder amount of times
         {
             strcat(output, &output[0]);
             encoder--;
-        }
+        }   
     }
 
     while((c = fgetc(inputFile)) != EOF && !encoderFlag){
@@ -73,5 +72,6 @@ int main(int argc, char **argv) {
         printf("%c", c);
      }
     if (runningDebug)
-        fprintf(stderr, "%d", lettersChaged);
+        fprintf(stderr, "the number of letters: %d\n", lettersChaged);
+    printf("\n");
 }
