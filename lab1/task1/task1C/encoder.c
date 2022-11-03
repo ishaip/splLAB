@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
             encoderIndex = encoderIndex % encoderLength;
         }
 
-        fputc(c, outputFile);
+        printf("c");
 
     }
 
