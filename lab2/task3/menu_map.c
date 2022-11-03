@@ -1,21 +1,131 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
- 
+
+
+char censor(char c);
+char* map(char *array, int array_length, char (*f) (char));
+char my_get(char c);
+char cprt(char c);
+char encrypt(char c);
+char decrypt(char c);
+char xprt(char c);
+char quit(char c);
+
+typedef struct fun_desc{
+  char *name;
+  char (*fun)(char);
+}FunDesc;
+
+ FunDesc funMenu[]= {
+  {"Get string", my_get},
+  {"print string", cprt},
+  {"print hex", xprt},
+  {"Censor",censor},
+  {"Encrypt",encrypt},
+  {"Decrypt", decrypt},
+  {"Quit", quit},
+  {NULL,NULL}
+};
+
+
 char censor(char c) {
   if(c == '!')
     return '.';
   else
     return c;
 }
- 
+
+//2.a
 char* map(char *array, int array_length, char (*f) (char)){
   char* mapped_array = (char*)(malloc(array_length*sizeof(char)));
   /* TODO: Complete during task 2.a */
+  for(int i = 0; i < array_length; i++ ){
+    mapped_array[i] = f(array[i]);
+  }
+  free(array);
   return mapped_array;
 }
- 
-int main(int argc, char **argv){
-  /* TODO: Test your code */
+
+//2.b 
+char my_get(char c){
+  return fgetc(stdin);
 }
+
+char cprt(char c){
+  if(0x20 <=c && c <= 0x7E){
+    printf("%c", c);
+    printf("\n");
+  }
+
+  else 
+    printf(".");
+
+  return c;
+}
+
+char encrypt(char c){
+  if(0x20 <=c && c <= 0x7E)
+    return c + 3;
+
+  else 
+    return c;
+}
+
+char decrypt(char c){
+  if(0x20 <=c && c <= 0x7E)
+    return c - 3;
+
+  else 
+    return c;
+}
+
+char xprt(char c){
+  printf("%x", c);
+  printf("\n");
+  return c;
+}
+
+char quit(char c){
+  if(c == 'q')
+    exit(0);
+  return c;
+}
+
+//3.a
+int main(int argc, char **argv){
+  //the string we are going to be using
+  char *carray = malloc(5 * sizeof(char));
+  //we arn't keeping the array size explicite
+  int num_of_func = 0;
+  for( int i = 0; funMenu[i].name != NULL; i++)
+    num_of_func++;
+
+  while(1){
+    printf("\nPlease choose a function: \n");
+    //print all the avalable options
+    for( int i = 0; funMenu[i].name != NULL; i++)
+      printf("%d)  %s\n", i, funMenu[i].name);
+
+    printf("Option : ");
+    int option = fgetc(stdin);
+    fgetc(stdin); //getting rid of the \n typed by pressing enter
+
+    //normalize option to a decimal number
+    option = option -'0';
+
+    if( 0 > option || option > num_of_func){
+      //there is a need to make sure the user used a legal input
+      printf("\nNot within bounds");
+      return 0;
+    }
+
+    printf("\nWithin bounds\n");
+    carray = map(carray, 5, funMenu[option].fun);
+    printf("Done.\n");
+  }
+
+  return 0;
+}
+
 
