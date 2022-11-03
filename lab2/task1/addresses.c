@@ -35,31 +35,37 @@ int main(int argc, char **argv)
 
     printf("- &foo1: %p\n", &foo1);
     printf("- &foo1: %p\n", &foo2);
-    printf("- &foo2 - &foo1: %ld\n", &foo2 - &foo1);
+    printf("- &foo2 - &foo1: %d\n", &foo2 - &foo1);
 
     int iarray[] = {1, 2, 3};
     char carray[] = {'a', 'b', 'c'};
-    int *iarrayPtr;
-    char *carrayPtr;
-    iarrayPtr = iarray;
-    carrayPtr = carray;
-    int p[3];
-    for (int i = 0; i < 3; i++)
-    {
-        printf("%d", *iarrayPtr);
-        iarrayPtr = iarrayPtr + 1;
-    }
-    printf('\n');
-    for (int i = 0; i < 3; i++)
-    {
-        printf("%c", *carrayPtr);
-        carrayPtr = carrayPtr + 1;
-    }
-    printf('\n');
-    // for (int i = 0; i < 3; i++)
-    // {
-    // printf("%d", p + i);
-    // }
+    float farray[] = {1.1, 2.2, 3.3};
+    double darray[] = {4, 5, 6};
+    // int *iarrayPtr;
+    // char *carrayPtr;
+    // float *farrayPtr;
+    // double *darrayPtr;
+    // iarrayPtr = iarray;
+    // carrayPtr = carray;
+    // farrayPtr = farray;
+    // darrayPtr = darray;
+
+    printf("%p", iarray);
+    printf("    %p", iarray + 1);
+    printf("\n");
+
+    printf("%p", carray);
+    printf("    %p", carray + 1);
+    printf("\n");
+
+    printf("%p", darray);
+    printf("    %p", darray + 1);
+    printf("\n");
+
+    printf("%p", farray);
+    printf("    %p", farray + 1);
+    printf("\n");
+
     return 0;
 }
 
