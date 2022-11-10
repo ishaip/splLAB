@@ -36,10 +36,9 @@ char censor(char c) {
     return c;
 }
 
-//2.a
+//2.a a map function that takes the operator and uses it on all element in the array
 char* map(char *array, int array_length, char (*f) (char)){
   char* mapped_array = (char*)(malloc(array_length*sizeof(char)));
-  /* TODO: Complete during task 2.a */
   for(int i = 0; i < array_length; i++ ){
     mapped_array[i] = f(array[i]);
   }
@@ -53,14 +52,12 @@ char my_get(char c){
 }
 
 char cprt(char c){
-  if(0x20 <=c && c <= 0x7E){
+  if(0x20 <=c && c <= 0x7E)
     printf("%c", c);
-    printf("\n");
-  }
-
-  else 
+  else
     printf(".");
-
+    
+  printf("\n");
   return c;
 }
 
@@ -81,13 +78,17 @@ char decrypt(char c){
 }
 
 char xprt(char c){
-  printf("%x", c);
+  if( c == '\n')
+    printf(".");
+  else
+    printf("%x", c);
   printf("\n");
   return c;
 }
 
 char quit(char c){
   if(c == 'q')
+  printf("\n");
     exit(0);
   return c;
 }
@@ -122,7 +123,7 @@ int main(int argc, char **argv){
 
     printf("\nWithin bounds\n");
     carray = map(carray, 5, funMenu[option].fun);
-    printf("Done.\n");
+    printf("DONE.\n");
   }
 
   return 0;
