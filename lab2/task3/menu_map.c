@@ -51,6 +51,7 @@ char my_get(char c){
   return fgetc(stdin);
 }
 
+
 char cprt(char c){
   if(0x20 <=c && c <= 0x7E)
     printf("%c", c);
