@@ -87,9 +87,10 @@ char xprt(char c){
 }
 
 char quit(char c){
-  if(c == 'q')
-  printf("\n");
+  if(c == 'q'){
+    printf("\n");
     exit(0);
+  }
   return c;
 }
 
@@ -98,7 +99,7 @@ int main(int argc, char **argv){
   //the string we are going to be using
   char *carray = malloc(5 * sizeof(char));
   //we arn't keeping the array size explicite
-  int num_of_func = -1;
+  int num_of_func = 0;
   for( int i = 0; fun_desc[i].name != NULL; i++)
     num_of_func++;
 
@@ -115,7 +116,7 @@ int main(int argc, char **argv){
     //normalize option to a decimal number
     option = option -'0';
 
-    if( 0 > option || option > num_of_func){
+    if( 0 > option || option > num_of_func - 1){
       //there is a need to make sure the user used a legal input
       printf("\nNot within bounds\n");
       return 0;

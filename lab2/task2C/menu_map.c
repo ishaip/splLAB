@@ -56,7 +56,7 @@ char cprt(char c){
     printf("%c", c);
   else
     printf(".");
-    
+
   printf("\n");
   return c;
 }
@@ -98,7 +98,7 @@ int main(int argc, char **argv){
   //the string we are going to be using
   char *carray = malloc(5 * sizeof(char));
   //we arn't keeping the array size explicite
-  int num_of_func = 0;
+  int num_of_func = -1;
   for( int i = 0; fun_desc[i].name != NULL; i++)
     num_of_func++;
 
@@ -117,10 +117,9 @@ int main(int argc, char **argv){
 
     if( 0 > option || option > num_of_func){
       //there is a need to make sure the user used a legal input
-      printf("\nNot within bounds");
+      printf("\nNot within bounds\n");
       return 0;
     }
-
     printf("\nWithin bounds\n");
     carray = map(carray, 5, fun_desc[option].fun);
     printf("DONE.\n");
