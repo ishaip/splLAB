@@ -14,9 +14,9 @@ int main(int argc, char **argv) {
     }
     for(int i = 1; i < argc; i++){
         input = fopen(argv[i], "rb");
-        fseek(input,0,SEEK_END);
-        long file_length = ftell(input);
-        fseek(input,0,SEEK_SET);
+        fseek(input,0,SEEK_END);            //start reading untill the end
+        long file_length = ftell(input);    //how long is the file
+        fseek(input,0,SEEK_SET);            //read untill we are done reading
         unsigned char buffer[1];
 
         for(long file_index = 0; file_index < file_length; file_index++){
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     }
 }
 
-void PrintHex(unsigned char * buffer, int length){
+void PrintHex(unsigned char *buffer, int length){
     for (int i=0; i < length; i++){
         printf("%02X ",buffer[i]);
     }

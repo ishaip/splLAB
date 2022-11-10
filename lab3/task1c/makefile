@@ -1,12 +1,12 @@
 all: exec
 
-exec: menu_map.o
-	gcc -m32 -g -Wall -o menu_map menu_map.o
+exec: virusDetector.o
+	gcc -m32 -g -Wall -o virusDetector virusDetector.o
 
-menu_map.o: menu_map.c
-	gcc -m32 -Wall -c menu_map.c -o menu_map.o
+virusDetector.o: virusDetector.c
+	gcc -m32 -Wall -c virusDetector.c -o virusDetector.o
 
 .PHONY: clean
 
 clean:
-	rm -f *.o menu_map
+	rm -f *.o virusDetector
