@@ -17,7 +17,7 @@ typedef struct fun_desc{
   char (*fun)(char);
 }FunDesc;
 
- FunDesc funMenu[]= {
+ FunDesc fun_desc[]= {
   {"Get string", my_get},
   {"print string", cprt},
   {"print hex", xprt},
@@ -99,14 +99,14 @@ int main(int argc, char **argv){
   char *carray = malloc(5 * sizeof(char));
   //we arn't keeping the array size explicite
   int num_of_func = 0;
-  for( int i = 0; funMenu[i].name != NULL; i++)
+  for( int i = 0; fun_desc[i].name != NULL; i++)
     num_of_func++;
 
   while(1){
     printf("\nPlease choose a function: \n");
     //print all the avalable options
-    for( int i = 0; funMenu[i].name != NULL; i++)
-      printf("%d)  %s\n", i, funMenu[i].name);
+    for( int i = 0; fun_desc[i].name != NULL; i++)
+      printf("%d)  %s\n", i, fun_desc[i].name);
 
     printf("Option : ");
     int option = fgetc(stdin);
@@ -122,7 +122,7 @@ int main(int argc, char **argv){
     }
 
     printf("\nWithin bounds\n");
-    carray = map(carray, 5, funMenu[option].fun);
+    carray = map(carray, 5, fun_desc[option].fun);
     printf("DONE.\n");
   }
 
