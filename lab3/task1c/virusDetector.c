@@ -151,7 +151,7 @@ link* load_signatures(link * virus_list){
         printf("Wrong name\n");
         exit(-1); 
     }
-
+    
     // same as in task 0
     fseek(signature_fp,0,SEEK_END);
     long file_length_in_bytes = ftell(signature_fp);

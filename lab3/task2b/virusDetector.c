@@ -20,7 +20,7 @@ void detect_virus(char *buffer, unsigned int size, link *virus_list);
 link *print_signatures(link* virus_list);
 link *alloc_scan(link* virus_list);
 link* load_signatures(link * virus_list);
-virus *read_virus(FILE *);
+virus *readVirus(FILE *);
 void print_virus(virus* virus, FILE* output);
 void Print_hex(unsigned char * buffer, int length, FILE *output);
 void list_print(link *virus_list, FILE *output); 
@@ -80,17 +80,15 @@ int main(int argc, char **argv){
 }
 
 //task 1 a:
-virus* read_virus(FILE* input){
+virus* readVirus(FILE* input){
     virus *vir = malloc(sizeof(virus));
     // sigSize value
-    unsigned char sigSize_buff[2];
-    fread(sigSize_buff,2,2,input);
-    vir -> SigSize = (((short)sigSize_buff[1]) << 8) | sigSize_buff[0];
+    fread(&vir -> SigSize,sizeof(unsigned short),1,input);
     // virus name
     fread(vir -> virusName, sizeof( * (vir -> virusName)), 16, input);
     // sig value
     vir -> sig = (unsigned char*)(malloc(sizeof(char)*(vir -> SigSize)));
-    fread(vir -> sig, sizeof(*(vir -> sig)),vir -> SigSize, input);
+    fread(vir -> sig, sizeof(unsigned char),vir -> SigSize, input);
     return vir;
 }
 
@@ -147,21 +145,30 @@ link* load_signatures(link * virus_list){
     printf("Please enter signature file name:\n");
     //flush stdin before reading new data
     fflush(stdin);
+    printf("here7");
     scanf("%s", input);
+    printf("here6");
     signature_fp = fopen(input , "rb");
+    printf("here5");
     if(signature_fp == NULL){
         printf("Wrong name\n");
         exit(-1); 
     }
 
     // same as in task 0
+    printf("here4");
     fseek(signature_fp,0,SEEK_END);
     long file_length_in_bytes = ftell(signature_fp);
     fseek(signature_fp,0,SEEK_SET);
+    printf("here3");
+    char *ignore = malloc(sizeof(unsigned long));
+    fread(ignore, sizeof(unsigned long),1,signature_fp);
 
     while( ftell(signature_fp) < file_length_in_bytes){
         virus *vir = malloc(sizeof(virus));
-        vir = read_virus(signature_fp);
+        printf("here2");
+        vir = readVirus(signature_fp);
+        printf("here1");
         virus_list = list_append(virus_list,vir);
     }
     fclose(signature_fp);
