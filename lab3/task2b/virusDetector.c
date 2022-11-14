@@ -145,30 +145,23 @@ link* load_signatures(link * virus_list){
     printf("Please enter signature file name:\n");
     //flush stdin before reading new data
     fflush(stdin);
-    printf("here7");
     scanf("%s", input);
-    printf("here6");
     signature_fp = fopen(input , "rb");
-    printf("here5");
     if(signature_fp == NULL){
         printf("Wrong name\n");
         exit(-1); 
     }
 
     // same as in task 0
-    printf("here4");
     fseek(signature_fp,0,SEEK_END);
     long file_length_in_bytes = ftell(signature_fp);
     fseek(signature_fp,0,SEEK_SET);
-    printf("here3");
     char *ignore = malloc(sizeof(unsigned long));
     fread(ignore, sizeof(unsigned long),1,signature_fp);
 
     while( ftell(signature_fp) < file_length_in_bytes){
         virus *vir = malloc(sizeof(virus));
-        printf("here2");
         vir = readVirus(signature_fp);
-        printf("here1");
         virus_list = list_append(virus_list,vir);
     }
     fclose(signature_fp);
