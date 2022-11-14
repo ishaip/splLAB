@@ -21,7 +21,7 @@ link *print_signatures(link* virus_list);
 link *alloc_scan(link* virus_list);
 link* load_signatures(link * virus_list);
 virus *readVirus(FILE *);
-void print_virus(virus* virus, FILE* output);
+void printVirus(virus* virus, FILE* output);
 void Print_hex(unsigned char * buffer, int length, FILE *output);
 void list_print(link *virus_list, FILE *output); 
 link* list_append(link* virus_list, virus* data);
@@ -92,7 +92,7 @@ virus* readVirus(FILE* input){
     return vir;
 }
 
-void print_virus(virus* virus, FILE* output){
+void printVirus(virus* virus, FILE* output){
     fprintf(output, "Virus name: %s\n", virus->virusName);
     fprintf(output, "Virus size: %d\n", virus->SigSize);
     fprintf(output, "signature:\n");
@@ -110,7 +110,7 @@ void Print_hex(unsigned char *buffer, int length, FILE *output){
 //task 1 b:
 void list_print(link *virus_list, FILE *output){
     while(virus_list != NULL){
-        print_virus(virus_list -> vir,output);
+        printVirus(virus_list -> vir,output);
         fprintf(output, "\n");
         virus_list = virus_list -> nextVirus;
     }
@@ -118,8 +118,11 @@ void list_print(link *virus_list, FILE *output){
 
 //adding at the start of the list
 link* list_append(link* virus_list, virus *data){
-    if(virus_list == NULL)
+    if(virus_list == NULL){
+        virus_list = malloc(sizeof(link));
         virus_list -> vir = data;
+
+    }
     else{
         virus_list -> nextVirus = virus_list;
         virus_list -> vir = data;
@@ -128,11 +131,11 @@ link* list_append(link* virus_list, virus *data){
 }
 
 void list_free(link *virus_list){
-    while(virus_list != NULL){
+    if(virus_list != NULL){
+        list_free(virus_list -> nextVirus);
         free(virus_list->vir->sig);
         free(virus_list->vir);
         free(virus_list);
-        virus_list = virus_list -> nextVirus;
     }
 }
 
