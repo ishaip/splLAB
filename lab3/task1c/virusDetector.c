@@ -8,17 +8,76 @@ char virusName[16];
 unsigned char* sig;
 } virus; 
 
+typedef struct link link;
+
+struct link {
+link *nextVirus;
+virus *vir;
+};
+
+typedef struct fun_desc{
+  char *name;
+  char (*fun)(char);
+}FunDesc;
+
+ FunDesc fun_desc[]= {
+  {"Load signatures", load_signatures},
+  {"Print signatures", print_signatures},
+  {"Detect viruses", alloc_scan},
+  {"Fix file",},
+  {"Quit", quit},
+  {NULL,NULL}
+};
 
 
-virus* readVirus(FILE*);
-void printVirus(virus* virus, FILE* output);
+void detect_virus(char *buffer, unsigned int size, link *virus_list);
+link *print_signatures(link* virus_list);
+link *alloc_scan(link* virus_list);
+link* load_signatures(link * virus_list);
+virus *read_virus(FILE *);
+void print_virus(virus* virus, FILE* output);
+void Print_hex(unsigned char * buffer, int length, FILE *output);
+void list_print(link *virus_list, FILE *output); 
+link* list_append(link* virus_list, virus* data);
+void list_free(link *virus_list); 
+char quit(char c);
 
+//very similar to what was used in lab2
+int main(int argc, char **argv){
+  //the string we are going to be using
+  link *carray_vir = NULL;
+  //we arn't keeping the array size explicite
+  int num_of_func = 0;
+  char buffer[10];
+  for( int i = 0; fun_desc[i].name != NULL; i++)
+    num_of_func++;
 
-int main(int argc, char **argv) {
-    return 0;
+  while(1){
+    printf("\nPlease choose a function: \n");
+    //print all the avalable options
+    for( int i = 1; fun_desc[i].name != NULL; i++)
+      printf("%d)  %s\n", i, fun_desc[i].name);
+
+    printf("Option : ");
+    fflush(stdin);
+    scanf("%s",buffer);
+
+    //normalize option to a decimal number
+    int option = atoi(buffer);
+
+    if( 1 > option || option > num_of_func ){
+      //there is a need to make sure the user used a legal input
+      printf("\nNot within bounds\n");
+      return -1;
+    }
+    printf("\nWithin bounds\n");
+    carray_vir = fun_desc[option - 1].fun(carray_vir);
+    printf("DONE.\n");
+  }
 }
 
-virus* readVirus(FILE* input){
+//task 1 a:
+virus* read_virus(FILE* input){
     virus *vir = malloc(sizeof(virus));
     // sigSize value
     unsigned char sigSize_buff[2];
@@ -32,6 +91,138 @@ virus* readVirus(FILE* input){
     return vir;
 }
 
-void printVirus(virus* virus, FILE* output){
+void print_virus(virus* virus, FILE* output){
+    fprintf(output, "Virus name: %s\n", virus->virusName);
+    fprintf(output, "Virus size: %d\n", virus->SigSize);
+    fprintf(output, "signature:\n");
+    Print_hex(virus->sig,virus->SigSize,output);
+    fprintf(output, "\n\n");
+}
 
+//an edited version of the PrintHex from assinment1 to spport outputs file
+void Print_hex(unsigned char *buffer, int length, FILE *output){
+    for (int i=0; i < length; i++){
+        fprintf(output, "%02X ",buffer[i]);
+    }
+}
+
+//task 1 b:
+void list_print(link *virus_list, FILE *output){
+    while(virus_list != NULL){
+        print_virus(virus_list -> vir,output);
+        fprintf(output, "\n");
+        virus_list = virus_list -> nextVirus;
+    }
+}
+
+//adding at the start of the list
+link* list_append(link* virus_list, virus *data){
+    if(virus_list == NULL)
+        virus_list -> vir = data;
+    else{
+        virus_list -> nextVirus = virus_list;
+        virus_list -> vir = data;
+    }
+    return virus_list;
+}
+
+void list_free(link *virus_list){
+    while(virus_list != NULL){
+        free(virus_list->vir->sig);
+        free(virus_list->vir);
+        free(virus_list);
+        virus_list = virus_list -> nextVirus;
+    }
+}
+
+
+char quit(char c){
+  if(c == 'q')
+  printf("\n");
+    exit(0);
+  return c;
+}
+
+link* load_signatures(link * virus_list){
+    FILE* signature_fp;
+    char input[30];
+    list_free(virus_list);
+    virus_list = NULL;
+    printf("Please enter signature file name:\n");
+    //flush stdin before reading new data
+    fflush(stdin);
+    scanf("%s", input);
+    signature_fp = fopen(input , "rb");
+    if(signature_fp == NULL)
+        exit(-1);
+    // same as in task 0
+    fseek(signature_fp,0,SEEK_END);
+    long file_length_in_bytes = ftell(signature_fp);
+    fseek(signature_fp,0,SEEK_SET);
+
+    while( ftell(signature_fp) < file_length_in_bytes){
+        link *virus_link = malloc(sizeof(link));
+        virus_link -> nextVirus = NULL;
+        virus_link -> vir = malloc(sizeof(virus));
+        read_virus(signature_fp);
+        virus_list = list_append(virus_list,virus_link);
+    }
+    fclose(signature_fp);
+    return virus_list;
+}
+
+link *print_signatures(link* virus_list){
+    if(virus_list !=NULL)
+        list_print(virus_list, stdout);
+    return virus_list;
+}
+
+//same as lab2
+link* quit(link* virus_list){
+    list_free(virus_list);
+    printf("\n");
+    exit(0);
+  return virus_list;
+}
+
+//1c:
+link *alloc_scan(link* virus_list){
+    // similar to task 0
+    char str[30];
+    char * file_buffer = (char *)(malloc(10000*sizeof(char)));
+    unsigned int size = 10000;
+    printf("Please enter suspect file name:\n");
+    //flush stdin before reading new data
+    fflush(stdin);
+    scanf("%s", str);
+    FILE* suspect_fp = fopen(str , "rb");
+    if(suspect_fp == NULL)
+        exit(-1);
+
+    fseek(suspect_fp,0,SEEK_END);
+    long file_length_in_bytes = ftell(suspect_fp);
+    fseek(suspect_fp,0,SEEK_SET);  
+
+    fread(file_buffer,sizeof(*file_buffer),10000,suspect_fp);
+    if(file_length_in_bytes<10000)
+        size = (unsigned int)(10000 - file_length_in_bytes);
+    
+    detect_virus(file_buffer,size,virus_list);
+    fclose(suspect_fp);
+    free(file_buffer);
+    return virus_list;
+}
+
+
+
+void detect_virus(char *buffer, unsigned int size, link *virus_list){
+    while(virus_list!=NULL){
+        unsigned int cur_sigSize = (unsigned int)(virus_list->vir->SigSize);
+        unsigned int last_index = size - cur_sigSize;
+        for(unsigned int byte_location=0; byte_location<=last_index; byte_location++){
+            if(memcmp(buffer+byte_location, virus_list->vir->sig, cur_sigSize)==0)
+                fprintf(stdout,"The starting byte locatio: %d\nThe virus name: %s\nThe size of the virus signature: %d\n",byte_location,virus_list->vir->virusName,cur_sigSize);
+        virus_list = virus_list->nextVirus;
+        }
+    }
 }
