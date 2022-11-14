@@ -17,7 +17,7 @@ typedef struct fun_desc{
   char (*fun)(char);
 }FunDesc;
 
- FunDesc fun_desc[]= {
+FunDesc fun_desc[]= {
   {"Get string", my_get},
   {"print string", cprt},
   {"print hex", xprt},

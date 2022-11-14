@@ -15,6 +15,7 @@ link *nextVirus;
 virus *vir;
 };
 
+void kill_virus(char *fileName, int signitureOffset, int signitureSize); 
 void detect_virus(char *buffer, unsigned int size, link *virus_list);
 link *print_signatures(link* virus_list);
 link *alloc_scan(link* virus_list);
@@ -26,6 +27,7 @@ void list_print(link *virus_list, FILE *output);
 link* list_append(link* virus_list, virus* data);
 void list_free(link *virus_list); 
 link* quit(link* virus_list);
+link* fix_file(link* virus_list);
 
 typedef struct fun_desc{
   char *name;
@@ -37,7 +39,7 @@ FunDesc fun_desc[]= {
   {"Load signatures",load_signatures},
   {"Print signatures",print_signatures},
   {"Detect viruses",alloc_scan},
-  //{"Fix file",NULL},
+  {"Fix file",fix_file},
   {"Quit", quit},
   //{NULL,NULL}
 };
@@ -220,4 +222,43 @@ void detect_virus(char *buffer, unsigned int size, link *virus_list){
         virus_list = virus_list->nextVirus;
         }
     }
+}
+
+link* fix_file(link* virus_list){
+    char fileName[30], byte_location[30];
+    int signitureOffset, signitureSize;
+    printf("File name: \n");
+    fflush(stdin);
+    scanf("%s", fileName);
+
+    printf("Byte location:\n");
+    fflush(stdin);
+    scanf("%s", byte_location);
+    signitureOffset = atoi(byte_location);
+    //padd byte_loacation with 0's
+    memset(byte_location,0,30);
+
+    printf("Signature size:\n");
+    fflush(stdin);
+    scanf("%s", byte_location);
+    signitureSize = atoi(byte_location);
+
+    kill_virus(fileName,signitureOffset,signitureSize);
+
+    return virus_list;
+}
+
+void kill_virus(char *fileName, int signitureOffset, int signitureSize) {
+    FILE* suspected_file;
+    char * NOP_replacment_segmant = (char *)(malloc(signitureSize*sizeof(char)));
+    memset(NOP_replacment_segmant,0x90,signitureSize*sizeof(char)); //0x90 is NOP
+    suspected_file = fopen(fileName, "r+");
+    if(suspected_file == NULL){
+        printf("Wrong file name");
+        exit(-1);
+    }
+    fseek(suspected_file,signitureOffset,SEEK_SET);
+    fwrite(NOP_replacment_segmant,signitureSize,1,suspected_file);
+    free(NOP_replacment_segmant);
+    fclose(suspected_file);
 }
