@@ -8,14 +8,15 @@ format  db      "%s",0x0a,0
 main:
         push    ebp             ; prepare stack frame for main
         mov     ebp, esp
-        pushad
-        mov     esi, dword[ebp + 8]   ; get first argc string into esi
-        push    dword [esi]          ; must dereference esi ; points to argc
+        sub     esp, 8
+        mov     edi, dword[ebp+8]    ; get argc into edi
+        mov     esi, dword[ebp+12]   ; get first argv string into esi
+        push    dword [esi]     ; must dereference esi; points to argv
         push    format
         call    printf
-        add     esi, 4               ; points to argv[0]
-        push    dword [esi]     ; must dereference esi;
+        add     esi, 4          ; esi now points to the next argument
+        push    dword [esi]     ; must dereference esi; points to argv
         push    format
-        call    puts          ; advance to the next pointer in argv[0]
+        call    printf
         leave
         ret
