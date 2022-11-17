@@ -1,10 +1,21 @@
-global main ; This is a commet
-extern printf
 
-
-section .text
+        segment .data
+format  db      "%s",0x0a,0
+        segment .text
+        global  main            ; let the linker know about main
+        extern  printf          ; resolve printf from libc
+        extern puts
 main:
-push ebp        ; save the previus frames pointer
-mov ebp, esp    ; move the epb to the next segment in the stack
-pushad          ; save all register information
-pop ecx, esp    ; pointer to ARGC on stack
+        push    ebp             ; prepare stack frame for main
+        mov     ebp, esp
+        pushad
+        mov     esi, dword[ebp + 8]   ; get first argc string into esi
+        push    dword [esi]          ; must dereference esi ; points to argc
+        push    format
+        call    printf
+        add     esi, 4               ; points to argv[0]
+        push    dword [esi]     ; must dereference esi;
+        push    format
+        call    puts          ; advance to the next pointer in argv[0]
+        leave
+        ret
