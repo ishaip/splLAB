@@ -8,7 +8,6 @@ format  db      "%s",0x0a,0
 main:
         push    ebp             ; prepare stack frame for main
         mov     ebp, esp
-        sub     esp, 8
         mov     edi, dword[ebp+8]    ; get argc into edi
         mov     esi, dword[ebp+12]   ; get first argv string into esi
 start_loop:
