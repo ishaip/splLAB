@@ -1,5 +1,6 @@
         segment  .data
-format  db       "%Xhh",10,0
+format1   db    "%s",0x0a,0
+format2   db    "%d",10,0
         segment  .text
         global   main            ; let the linker know about main
 x_struct dd 5
@@ -15,9 +16,10 @@ main:
      ;   mov     edi, dword[ebp+8]    ; get argc into edi
      ;   mov     esi, dword[ebp+12]   ; get first argv string into esi
 start_loop:
-        mov     ebx, dword[x_num + 8]
-        push    dword [ebx]     ; must dereference esi; points to argv
-        push    format
+        mov     ebx, dword[x_num ]
+        ;mov     eax, dword[ebx]
+        push    dword [ebx]    ; must dereference esi; points to argv
+        push    format2
         call    printf
         ;add     esi, 4          ; advance to the next pointer in argv
         ;dec     edi             ; decrement edi from argc to 0
