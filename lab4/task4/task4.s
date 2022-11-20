@@ -1,44 +1,50 @@
-section .rodata
-    str1: db "%x",10,0
-    str2: db "%d",10,0
-    x_struct: dd 5
-    x_num: db 0xaa, 1,2,0x44,0x4f    
-
-segment .text
-global print_multi
-global main
-extern printf
+        segment .data
+format1   db    "%s",0x0a,0
+format2   db    "%d",10,0
+        segment .text
+        global  main
+        global end_loop
+        global loop
+        global rand_num            ; let the linker know about main
+        extern  printf          ; resolve printf from libc
+        extern puts
+        state dw 16
+        mask db 255
 main:
     push ebp
     mov ebp, esp
-    push dword x_struct
-    call print_multi
+    push state
+    call rand_num
     mov eax, 0
     mov esp, ebp
     pop ebp
     ret
-
-print_multi:
+rand_num:
     push ebp
-    mov ebp, esp
-    mov edi, [ebp+8] ;p
-    mov esi, [edi] ; size
-    add edi, 4
-    
+    mov edi, [esp+8] ;p to state value
+    mov eax , 20    ;loop counter
+    mov ebx, 0
+    mov bl , [edi]  ;ebx will hold the state value
 loop:
-    cmp esi, 0
-    jz post_loop ; esi == 0 --> post_loop
-    mov ecx,0
-    mov cl, [edi]
-    push dword ecx
-    push dword str1
+    cmp eax, 0
+    jz end_loop
+    dec eax
+
+    mov ecx, 0
+    xor ecx , ebx       ;get the parity
+    shl word[ecx], 15   ;get the last bit
+    Shr word[ebx], 1    ;shr
+    add ebx, ecx        ;add the MSB bit
+
+    pushad         ;print 
+    push dword ebx
+    push dword format2
     call printf
-    add edi, 1
     add esp, 8
-    dec esi
+    popad
     jmp loop
 
-post_loop:
+end_loop:
     mov eax, 0
     mov esp, ebp
     pop ebp
