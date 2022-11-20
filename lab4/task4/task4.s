@@ -1,27 +1,45 @@
+section .rodata
+    str1: db "%x",10,0
+    str2: db "%d",10,0
+    x_struct: dd 5
+    x_num: db 0xaa, 1,2,0x44,0x4f    
 
-        segment .data
-format1  db     "%s",0x0a,0
-format2  db     "%d",10,0
-        segment .text
-        global  main            ; let the linker know about main
-        extern  printf          ; resolve printf from libc
-        extern puts
+segment .text
+global print_multi
+global main
+extern printf
 main:
-        push    ebp             ; prepare stack frame for main
-        mov     ebp, esp
-        mov     edi, dword[ebp+8]    ; get argc into edi
-        push    dword edi
-        push    format2
-        call    printf
-        mov     esi, dword[ebp+12]   ; get first argv string into esi
-start_loop:
-        push    dword [esi]     ; must dereference esi; points to argv
-        push    format1
-        call    printf
-        add     esi, 4          ; advance to the next pointer in argv
-        dec     edi             ; decrement edi from argc to 0
-        cmp     edi, 0          ; when it hits 0, we're done
-        jnz     start_loop      ; end with NULL pointer
-end_loop:
-        leave
-        ret
+    push ebp
+    mov ebp, esp
+    push dword x_struct
+    call print_multi
+    mov eax, 0
+    mov esp, ebp
+    pop ebp
+    ret
+
+print_multi:
+    push ebp
+    mov ebp, esp
+    mov edi, [ebp+8] ;p
+    mov esi, [edi] ; size
+    add edi, 4
+    
+loop:
+    cmp esi, 0
+    jz post_loop ; esi == 0 --> post_loop
+    mov ecx,0
+    mov cl, [edi]
+    push dword ecx
+    push dword str1
+    call printf
+    add edi, 1
+    add esp, 8
+    dec esi
+    jmp loop
+
+post_loop:
+    mov eax, 0
+    mov esp, ebp
+    pop ebp
+    ret

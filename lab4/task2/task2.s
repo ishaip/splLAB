@@ -9,42 +9,37 @@ global print_multi
 global main
 extern printf
 main:
-        push ebp
-        mov ebp, esp
-        push dword x_struct
-        call print_multi
-        mov eax, 0
-        mov esp, ebp
-        pop ebp
-        ret
+    push ebp
+    mov ebp, esp
+    push dword x_struct
+    call print_multi
+    mov eax, 0
+    mov esp, ebp
+    pop ebp
+    ret
+
 print_multi:
-        push ebp
-        mov ebp, esp
+    push ebp
+    mov ebp, esp
     mov edi, [ebp+8] ;p
     mov esi, [edi] ; size
     add edi, 4
-
-;    mov ebx, edi ; pointer to arr[0]
     
-    loop:
-        cmp esi, 0
-        jz post_loop ; jump not positive JP
-        
-        sub esi, 1
+loop:
+    cmp esi, 0
+    jz post_loop ; esi == 0 --> post_loop
+    mov ecx,0
+    mov cl, [edi]
+    push dword ecx
+    push dword str1
+    call printf
+    add edi, 1
+    add esp, 8  ;next value 
+    dec esi
+    jmp loop
 
-        mov ecx,0
-        mov cl, [edi]
-        push dword ecx
-        push dword str1
-
-        call printf
-        add edi, 1
-
-        add esp, 8
-        jmp loop
-
-    post_loop:
-        mov eax, 0
-        mov esp, ebp
-        pop ebp
-        ret
+post_loop:
+    mov eax, 0
+    mov esp, ebp
+    pop ebp
+    ret
