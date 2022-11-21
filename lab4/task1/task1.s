@@ -1,6 +1,6 @@
 
         segment .data
-format1  db     "%s",0x0a,0
+format1  db     "%s",10,0
 format2  db     "%d",10,0
         segment .text
         global  main            ; let the linker know about main

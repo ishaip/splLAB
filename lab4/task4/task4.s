@@ -8,7 +8,7 @@ str1: db "%x",10,0
         extern  printf          ; resolve printf from libc
         extern puts
         state dd 0x1010
-        mask dd 0x0101
+        mask dd 0x1100
 main:
     push ebp
     mov ebp, esp
@@ -21,16 +21,17 @@ loop:
     dec eax
 
     mov esi ,[mask]  ;esi is the mask
-    and esi ,edi
-    mov ebx, 0
+    and esi ,edi     
+    mov ebx, 0       ;odd flag
 
-    one_counter:
+    one_counter:    ;we will check leftmose bit
         cmp esi, 0
         jz one_counter_end
-        xor ebx, esi
+        xor ebx, esi    
         and ebx, 1
         shr esi, 1
         jmp one_counter
+
     one_counter_end:
     shr edi, 1
     shl ebx, 15
@@ -42,9 +43,9 @@ loop:
     call printf
     add esp, 8
     popad
-    jmp loop
 
-end_loop:
+    jmp loop
+end_loop:       ;taken form stackoverflow
     mov eax, 0
     mov esp, ebp
     pop ebp

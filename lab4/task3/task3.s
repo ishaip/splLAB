@@ -1,16 +1,15 @@
 section .data
     str1: db "%x",10,0
     str2: db "%d",10,0
-    x_struct: dd 5
-    x_num: db 0xaa, 1,2,0x44,0x4f
-    y_struct: dd 6
-    y_num: db 0xaa, 1,2,3,0x44,0x4f
+    x_struct: dd 6
+    x_num: db 1,0xf0,1,2,0x44,0x4f
+    y_struct: dd 5
+    y_num: db 1,1,2,0x44,1
+    carry dd 0
 section .text
     global multi_add
     global main
     global get_maxmin
-    global x_struct
-    global y_struct
     global loop
     global done_loop
     global done_min_arr
@@ -50,7 +49,7 @@ get_maxmin:
     mov     esi, ecx
     
 multi_add:
-   mov edx, eax ; duplicate max_size to edx
+    mov edx, eax ; duplicate max_size to edx
     push edx 
     
     mov ecx, eax 
@@ -76,7 +75,8 @@ done_min_arr:
     push edx 
     mov edx, 0
     mov dl, [edi] ; add edi[i]
-    add ecx, edx
+    adc cl, dl
+jump_no_carry:
     pop edx
     mov [eax], ecx ; move the result to eax[i]
     
