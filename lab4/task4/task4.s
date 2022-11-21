@@ -1,6 +1,5 @@
         segment .data
-format1   db    "%s",0x0a,0
-format2   db    "%d",10,0
+str1: db "%x",10,0
         segment .text
         global  main
         global end_loop
@@ -8,37 +7,38 @@ format2   db    "%d",10,0
         global rand_num            ; let the linker know about main
         extern  printf          ; resolve printf from libc
         extern puts
-        state dw 16
-        mask db 255
+        state dd 0x1010
+        mask dd 0x0101
 main:
     push ebp
     mov ebp, esp
-    push state
-    call rand_num
-    mov eax, 0
-    mov esp, ebp
-    pop ebp
-    ret
 rand_num:
-    push ebp
-    mov edi, [esp+8] ;p to state value
+    mov edi, [state] ;state value
     mov eax , 20    ;loop counter
-    mov ebx, 0
-    mov bl , [edi]  ;ebx will hold the state value
 loop:
     cmp eax, 0
     jz end_loop
     dec eax
 
-    mov ecx, 0
-    xor ecx , ebx       ;get the parity
-    shl word[ecx], 15   ;get the last bit
-    Shr word[ebx], 1    ;shr
-    add ebx, ecx        ;add the MSB bit
+    mov esi ,[mask]  ;esi is the mask
+    and esi ,edi
+    mov ebx, 0
+
+    one_counter:
+        cmp esi, 0
+        jz one_counter_end
+        xor ebx, esi
+        and ebx, 1
+        shr esi, 1
+        jmp one_counter
+    one_counter_end:
+    shr edi, 1
+    shl ebx, 15
+    add edi, ebx
 
     pushad         ;print 
-    push dword ebx
-    push dword format2
+    push dword edi
+    push dword str1
     call printf
     add esp, 8
     popad

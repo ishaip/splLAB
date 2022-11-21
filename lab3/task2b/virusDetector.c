@@ -109,10 +109,10 @@ void Print_hex(unsigned char *buffer, int length, FILE *output){
 
 //task 1 b:
 void list_print(link *virus_list, FILE *output){
-    while(virus_list != NULL){
+    if(virus_list != NULL){
         printVirus(virus_list -> vir,output);
         fprintf(output, "\n");
-        virus_list = virus_list -> nextVirus;
+        list_print(virus_list -> nextVirus, output);
     }
 }
 
