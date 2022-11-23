@@ -1,30 +1,17 @@
-# Readme:
-# gcc : gnu c/c++ compiler
-# gcc flags:
-# 	-m32 : use 32bit libraries
-# 	-g : add debug info - no flag no debug
-# 	-Wall : warning level - all
-# 	-c : no linking (just compile)
-# 	-o : optimize
-# nasm : assembly compiler
+all: exec
 
-# macros:
-compC = gcc -m32 -g -Wall -c -o
-complC = gcc -m32 -g -Wall -o
-complS = nasm -g -f elf -w+all -o
+libs: asm-lib c-lib
 
-.PHONY : clean
+asm-lib: start.s
+	nasm -f elf32 start.s -o start.o
 
-all: task0
+c-lib: util.c
+	gcc -m32 -Wall -ansi -c -nostdlib -fno-stack-protector util.c -o util.o
 
-# (target) : (dependencies)
-task0 :  task0.o
-#	@echo "making exe"
-	$(complC) task0 task0.o
+exec: main.c libs
+	gcc -m32 -Wall -ansi -c -nostdlib -fno-stack-protector main.c -o main.o
+	ld -m elf_i386 start.o main.o util.o -o task0
 
-task0.o : task0.s
-#	@echo "making task0.o"
-	$(complS) task0.o task0.s
-
+.PHONY: clean
 clean:
-	rm -f *.o task0
+	rm -rf ./*.o main
