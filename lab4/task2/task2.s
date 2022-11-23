@@ -21,7 +21,7 @@ main:
 print_multi:
     push ebp
     mov ebp, esp
-    mov edi, [ebp+8] ;p
+    mov edi, [ebp+8] ;pointer to struct
     mov esi, [edi] ; size
     add edi, 4
     
@@ -30,11 +30,13 @@ loop:
     jz post_loop ; esi == 0 --> post_loop
     mov ecx,0
     mov cl, [edi]
+
     push dword ecx
     push dword str1
     call printf
+    add esp, 8 
+
     add edi, 1
-    add esp, 8  ;next value 
     dec esi
     jmp loop
 
