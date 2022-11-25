@@ -41,9 +41,9 @@ int main (int argc , char* argv[], char* envp[]){
     if(strncmp("-a", argv[i], 2) == 0) 
       prefix = 1;
   
-  directory_fd = system_call('.', 0, 0777); /*opening current dir*/
+  directory_fd = system_call(5, ".", 0, 0777);     /*opening current dir*/
   if (directory_fd < 0) {
-    system_call(STDOUT,"File Opening Fail",17);
+    system_call(STDOUT, "File Opening Fail", 17);
     return system_call(SYS_EXIT,0x55);
   }
 
