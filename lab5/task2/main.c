@@ -38,8 +38,10 @@ int main (int argc , char* argv[], char* envp[]){
 
   int i;
   for(i = 1; i < argc; i++) 
-    if(strncmp("-a", argv[i], 2) == 0) 
+    if(strncmp("-a", argv[i], 2) == 0){ 
       prefix = 1;
+      system_call(STDOUT, "File Opening 1234", 17);
+    }
   
   directory_fd = system_call(5, ".", 0, 0777);     /*opening current dir*/
   if (directory_fd < 0) {
@@ -52,6 +54,7 @@ int main (int argc , char* argv[], char* envp[]){
     system_call(STDOUT,itoa(directory_size),strlen(itoa(directory_size)));
     int curr_pos;
     for(curr_pos = 0; curr_pos < directory_size;){
+      system_call(STDOUT, "File Opening 4321", 17);
       dir = (struct linux_dirent *)(buffer + curr_pos);
       if(prefix != 0){
         if(strncmp(dir->d_name, argv[prefix] + 2, strlen(argv[prefix] + 2)) == 0){
