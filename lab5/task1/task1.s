@@ -1,4 +1,5 @@
 segment .data
+str_infection: db "Hello, Infected File"
 format: db "%X",10,0
 str1: db 10
 i_str: dd "-i"
@@ -6,7 +7,7 @@ e_str: dd "+e"
 o_str: dd "-o"
 len: db 0
 encoder: db 0 ;add value always
-encoder_index: db 2 ;the curr_index in encoder
+encoder_flag: db 0 ;the curr_index in encoder
 input_file: db 0 ;check
 output_file: db 1 ;check
 sys_read equ 3
@@ -20,6 +21,7 @@ WRITE EQU 4
 STDOUT EQU 1
 global  main            ; let the linker know about main
 extern strlen
+extern atoi
 extern printf
 main:
         push    ebp             ; prepare stack frame for main
@@ -54,41 +56,67 @@ set_flags:
         mov ecx, str1
         mov edx, 1
         int 0x80
-        popad	
+        popad
 
-        cmp dword [esi], e_str ;check
-        jnz no_e_flag
-        ;esi = hold the rest of esi+2
-        ;add to the global encoder 
-        mov [encoder], esi
+        mov     ebx, [esi]
+        mov     eax, 0
+        mov     al, [ebx] 
+        cmp     al, 43           ; compare to +
+        jne     no_e_flag
+        inc     ebx
+        mov     al, [ebx]
+        cmp     al, 101         ; compare to e
+        jne     no_e_flag
+        inc ebx
+
+        mov eax, 0
+        push ebx
+        call atoi      ;ebx is a pointer to the rest of the string 
+        mov [encoder], eax      ; encoder now holds the int value of the string
+        mov [encoder_flag], dword 1   ; rise encoder flag
+        
 no_e_flag:
-        cmp dword [esi], i_str
-        jnz no_i_flag
-        ;init the -i case
-        ;esi = hold the rest of esi+2
+
+        mov     ebx, [esi]
+        mov     eax, 0
+        mov     al, [ebx] 
+        cmp     al, 45           ; compare to +
+        jne     no_i_flag
+        inc     ebx
+        mov     al, [ebx]
+        cmp     al, 105         ; compare to e
+        jne     no_i_flag
+        inc ebx   ; i flag case to be done, ebx is a pointer to the rest of the input adress
+
         pushad
         mov eax, sys_open
-        mov ebx, esi
+        mov ebx, ebx
         mov ecx, 1
         int 0x80
         mov [input_file], eax ;the returned value is in eax 
         popad
-
 no_i_flag:
-        cmp dword [esi], o_str
-        jnz no_o_flag
-        ;use sys_open input
-        ;init o case
-        ;esi = hold the rest of esi+2
+
+        mov     ebx, [esi]
+        mov     eax, 0
+        mov     al, [ebx] 
+        cmp     al, 45           ; compare to +
+        jne     no_o_flag
+        inc     ebx
+        mov     al, [ebx]
+        cmp     al, 111         ; compare to e
+        jne     no_o_flag
+        inc ebx   ; i flag case to be done, ebx is a pointer to the rest of the output adress
+
         pushad
         mov eax, sys_open
-        mov ebx, esi
+        mov ebx, ebx
         mov ecx, 2
         int 0x80
         mov [output_file], eax ;the returned value is in eax 
         popad 
-
 no_o_flag:
+
         add     esi, 4          ; advance to the next pointer in argv
         dec     edi             ; decrement edi from argc to 0
         cmp     edi, 0          ; when it hits 0, we're done
@@ -102,19 +130,25 @@ do_action:
         mov eax, sys_read
         mov ebx, 0 ; file descriptor (stdin) = 0
         mov ecx, buffer
-        mov edx, 8 ;wrong- need to change
+        mov edx, 1 ;wrong- need to change
         int 0x80
         popad
 
-        ;loop- change all the
-
+        ;adding encoder value
+        cmp [encoder_flag], dword 0
+        jz  no_encoder_value
+        pushad
+        mov eax, [encoder]
+        add [buffer],eax 
+        popad
+no_encoder_value:
 
         pushad
-        mov	eax,sys_write		; system call number (sys_write) = 4
+        mov	eax,sys_write	; system call number (sys_write) = 4
         mov	ebx,1		; file descriptor (stdout) = 1
-        mov	ecx,buffer		; message to write
-        mov	edx,8		; message length
-       int	0x80		; call kernel
+        mov	ecx,buffer	; message to write
+        mov	edx,1		; message length
+        int	0x80		; call kernel
         popad
 
        jmp do_action

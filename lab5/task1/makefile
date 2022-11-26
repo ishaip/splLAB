@@ -18,9 +18,9 @@ complS = nasm -g -f elf -w+all -o
 all: task1
 
 # (target) : (dependencies)
-task1 :  task1.o
+task1 :  task1.o 
 #	@echo "making exe"
-	$(complC) task1 task1.o
+	$(complC) task1 task1.o 
 
 task1.o : task1.s
 #	@echo "making task1.o"
