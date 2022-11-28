@@ -1,34 +1,11 @@
 #include "util.h"
 
 #define SYS_EXIT 1
-#define SYS_READ 3
 #define SYS_WRITE 4
 #define SYS_OPEN 5
-#define SYS_CLOSE 6
-#define SYS_ISEEK 19
 #define SYS_GETDENTS 141
-#define SYS_GETCWD 0xb7
-
-#define STDIN 0
 #define STDOUT 1
-#define STDERR 2
-
 #define O_RD 0
-#define O_WR 1
-#define O_RDRW 2
-#define O_CREAT 64
-#define O_DIRECTORY 4
-#define O_APPEND 0x400
-
-
-
-#define SEEK_SET 0
-#define SEEK_CUR 1
-#define SEEK_END 2
-
-#define EOF 4
-
-#define BUFFER_SIZE 8192
 
 typedef struct linux_dirent {
     unsigned long  d_ino;     /* Inode number */
@@ -38,6 +15,8 @@ typedef struct linux_dirent {
                         /* length is actually (d_reclen - 2 -
                            offsetof(struct linuxma_dirent, d_name) */
 } linux_dirent;
+/*taken from https://docs.huihoo.com/doxygen/linux/kernel/3.7/structlinux__dirent.html*/
+
 
 typedef struct link link;
 struct link {
