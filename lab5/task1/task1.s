@@ -5,7 +5,7 @@ str1: db 10
 i_str: dd "-i"
 e_str: dd "+e"
 o_str: dd "-o"
-len: db 0
+len: dd 0
 encoder: dd 0 ;add value always
 encoder_flag: dd 0 ;the curr_index in encoder
 input_file: dd 0 ;check
@@ -15,6 +15,8 @@ sys_write equ 4
 sys_open equ 5
 buffer: db 0xff
 better_encoder: dd 0
+offset: dd 0
+encoder_len: dd 0
 
 
 segment .text
@@ -73,12 +75,23 @@ set_flags:
         jnz     no_e_flag
         inc ebx
 
-        mov eax, 0
-        push ebx
-        call atoi      ;ebx is a pointer to the rest of the string 
-        ;mov [encoder], eax      ; encoder now holds the int value of the string
-        mov [better_encoder], eax
+;        mov eax, 0
+;        push ebx
+;        call atoi      ;ebx is a pointer to the rest of the string 
+
+        mov [encoder], ebx      ; encoder now holds the string without
+        
+;        mov [better_encoder], ebx
         mov [encoder_flag], dword 1   ; rise encoder flag
+
+        pushad
+        ;push dword[ebx]
+        ;call strlen
+        mov eax, dword[len]
+        sub eax ,3
+        mov [encoder_len],dword eax
+        popad
+
 no_e_flag:
 
         ;testing the e flag
@@ -160,11 +173,36 @@ do_action:
         jz do_action 
 
         ;adding encoder value
+        pushad
         cmp [encoder_flag], dword 0
         jz  no_encoder_value
+
+        mov eax, 0
+        mov eax, encoder
+        add eax, [offset] 
+        add [offset], dword 1
+
+
         pushad
-        mov eax, [better_encoder]
-        add [buffer],eax 
+        mov	ecx, [eax]	; message to write
+        mov	eax,sys_write	; system call number (sys_write) = 4
+        mov	ebx,1		; file descriptor (stdout) = 1
+
+        mov	edx,21		; message length
+        int	0x80		; call kernel
+        popad
+
+
+        mov ebx, 0
+        mov bl, [eax]
+
+        sub dword [ebx], 48
+        mov ecx, [ebx]
+        add dword [buffer],ebx 
+        mov ecx, [encoder_len]
+        cmp [offset], ecx
+        jnz no_encoder_value
+        mov [offset], dword 0
         popad
 no_encoder_value:
 
