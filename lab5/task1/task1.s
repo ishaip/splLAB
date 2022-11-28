@@ -75,22 +75,32 @@ set_flags:
         jnz     no_e_flag
         inc ebx
 
-;        mov eax, 0
-;        push ebx
-;        call atoi      ;ebx is a pointer to the rest of the string 
+
+
+
 
         mov [encoder], ebx      ; encoder now holds the string without
-        
-;        mov [better_encoder], ebx
+        mov eax, [len]
+        sub eax, 2
+        mov [encoder_len], eax
         mov [encoder_flag], dword 1   ; rise encoder flag
 
+
+        mov eax, 0
+        mov ecx, [encoder]
+        mov ebx, [offset]
+        mov al, [ecx + ebx]
+        cmp al, 51
+        jnz no_e_flag
         pushad
-        ;push dword[ebx]
-        ;call strlen
-        mov eax, dword[len]
-        sub eax ,3
-        mov [encoder_len],dword eax
+        mov	ecx, [encoder]	; message to write
+
+        mov	eax,sys_write	; system call number (sys_write) = 4
+        mov	ebx,1		; file descriptor (stdout) = 1
+        mov	edx,[encoder_len]		; message length
+        ;int	0x80		; call kernel
         popad
+        
 
 no_e_flag:
 
@@ -169,7 +179,7 @@ do_action:
         jz end_of_file  ;making sure were not done
         popad
 
-        cmp [buffer], dword 0
+        cmp [buffer], dword 0   ;removing the enter symbol
         jz do_action 
 
         ;adding encoder value
@@ -178,30 +188,17 @@ do_action:
         jz  no_encoder_value
 
         mov eax, 0
-        mov eax, encoder
-        add eax, [offset] 
-        add [offset], dword 1
-
-
-        pushad
-        mov	ecx, [eax]	; message to write
-        mov	eax,sys_write	; system call number (sys_write) = 4
-        mov	ebx,1		; file descriptor (stdout) = 1
-
-        mov	edx,21		; message length
-        int	0x80		; call kernel
-        popad
-
-
-        mov ebx, 0
-        mov bl, [eax]
-
-        sub dword [ebx], 48
-        mov ecx, [ebx]
-        add dword [buffer],ebx 
-        mov ecx, [encoder_len]
-        cmp [offset], ecx
-        jnz no_encoder_value
+        mov ecx, [encoder]      ; encoder is the pinter to the string
+        mov ebx, [offset]       ; what index are we going for
+        mov al, [ecx + ebx]     ; al is the value to be added
+        sub al, 48              ; normalize al
+        add [buffer], al  
+      
+        add [offset],dword 1    
+        ;making sure we didnt finish the encoder length
+        mov eax, [encoder_len]
+        cmp [offset], eax
+        jne no_encoder_value
         mov [offset], dword 0
         popad
 no_encoder_value:
