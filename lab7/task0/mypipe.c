@@ -12,7 +12,7 @@
 #define SUSPENDED 0
 
 int main(int argc, char **argv){
-	int pipefd[2];		//why is this an int, internet says so but it should be a FILE?
+	int pipefd[2];		// file decriptor is of type int https://man7.org/linux/man-pages/man3/fileno.3.html
 	pid_t child_pid;
 	char buf;
 	int ret_val;
