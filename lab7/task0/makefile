@@ -15,29 +15,24 @@ complS = nasm -g -f elf -w+all -o
 
 .PHONY : clean
 
-all: myshell looper
+all: mypipe
 
 # (target) : (dependencies)
-myshell : myshell.o  LineParser.o # looper.o
+mypipe : mypipe.o  LineParser.o # looper.o
 #	@echo "making exe"
-	$(complC) myshell $^
+	$(complC) mypipe $^
 
-myshell.o : myshell.c 
+mypipe.o : mypipe.c 
 #	@echo "making mainC.o"
-	$(compC) myshell.o $^
+	$(compC) mypipe.o $^
 
 LineParser.o : LineParser.c
 #	@echo "making mainC.o"
 	$(compC) LineParser.o $^
 
-# (target) : (dependencies)
-looper : looper.o
-#	@echo "making exe"
-	$(complC) looper $^
-	
-looper.o: looper.c
-#	@echo "making looper.o"
-	$(compC) looper.o $^	
+#looper.o : looper.c 
+#	@echo "making mainC.o"
+#	$(compC) looper.o $^
 
 clean:
-	rm -f *.o myshell looper
+	rm -f *.o mypipe
