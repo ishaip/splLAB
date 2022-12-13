@@ -7,7 +7,6 @@
 # 	-c : no linking (just compile)
 # 	-o : optimize
 # nasm : assembly compiler
-# taken form an online form
 
 # macros:
 compC = gcc -m32 -g -Wall -c -o
@@ -19,17 +18,21 @@ complS = nasm -g -f elf -w+all -o
 all: myshell
 
 # (target) : (dependencies)
-myshell : task0.o LineParser.o 
+myshell : myshell.o  LineParser.o # looper.o
 #	@echo "making exe"
 	$(complC) myshell $^
+
+myshell.o : myshell.c 
+#	@echo "making mainC.o"
+	$(compC) myshell.o $^
 
 LineParser.o : LineParser.c
 #	@echo "making mainC.o"
 	$(compC) LineParser.o $^
 
-task0.o : task0.c 
+#looper.o : looper.c 
 #	@echo "making mainC.o"
-	$(compC) task0.o $^
+#	$(compC) looper.o $^
 
 clean:
 	rm -f *.o myshell

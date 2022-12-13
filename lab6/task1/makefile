@@ -1,17 +1,38 @@
-all: exec
+# Readme:
+# gcc : gnu c/c++ compiler
+# gcc flags:
+# 	-m32 : use 32bit libraries
+# 	-g : add debug info - no flag no debug
+# 	-Wall : warning level - all
+# 	-c : no linking (just compile)
+# 	-o : optimize
+# nasm : assembly compiler
 
-libs: asm-lib c-lib
+# macros:
+compC = gcc -m32 -g -Wall -c -o
+complC = gcc -m32 -g -Wall -o
+complS = nasm -g -f elf -w+all -o
 
-asm-lib: start.s
-	nasm -f elf32 start.s -o start.o
+.PHONY : clean
 
-c-lib: util.c
-	gcc -m32 -Wall -ansi -c -nostdlib -fno-stack-protector util.c -o util.o
+all: myshell
 
-exec: main.c libs
-	gcc -m32 -Wall -ansi -c -nostdlib -fno-stack-protector main.c -o main.o
-	ld -m elf_i386 start.o main.o util.o -o task0
+# (target) : (dependencies)
+myshell : myshell.o  LineParser.o # looper.o
+#	@echo "making exe"
+	$(complC) myshell $^
 
-.PHONY: clean
+myshell.o : myshell.c 
+#	@echo "making mainC.o"
+	$(compC) myshell.o $^
+
+LineParser.o : LineParser.c
+#	@echo "making mainC.o"
+	$(compC) LineParser.o $^
+
+#looper.o : looper.c 
+#	@echo "making mainC.o"
+#	$(compC) looper.o $^
+
 clean:
-	rm -rf ./*.o main
+	rm -f *.o myshell
