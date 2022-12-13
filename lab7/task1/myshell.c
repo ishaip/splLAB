@@ -45,7 +45,7 @@ void execute(cmdLine *pCmdLine){
                     _exit(1);
                 }
                 close(0);
-                dup(fd);	// update file desriptor to be fb	
+                dup2(fd,0);	// update file desriptor to be fb	
                 close(fd);	// the old fb is still open
             }
             if (pCmdLine->outputRedirect != NULL){
@@ -55,7 +55,7 @@ void execute(cmdLine *pCmdLine){
                     _exit(1);
                 }
                 close(1);
-                dup(fd);	// update file desriptor to be fb	
+                dup2(fd,1);	// update file desriptor to be fb	
                 close(fd);	// the old fb is still open
             }
             if (execvp(pCmdLine->arguments[0],pCmdLine->arguments) == -1) {
@@ -95,14 +95,14 @@ int main(int argc, char** argv) {
         // NULL on error or when end of file occurs while no characters have been read.
         
         if (debug){
-            fprintf(stderr,"the command is: %s\n",command);
+            fprintf(stderr,"The command is: %s\n",command);
         }
         
         if (ret_val!= NULL&& (cmdLine = parseCmdLines(command))!= NULL ){
         execute(cmdLine);
         }
         else{
-                fprintf(stdout,"%s\n","command issues");
+                fprintf(stdout,"%s\n","Illegal command");
         }
     }
     return 0;
