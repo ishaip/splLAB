@@ -18,6 +18,8 @@ typedef struct commands{
 	struct commands *next; // next process in the list
 } commands;
 
+void excuteLastCommand(int n);
+
 
 void freeHistory(){
     for (int i=0 ;i <= oldest; i++){
@@ -29,7 +31,7 @@ void printHistory(){
     for (int i=0 ;i <= oldest && i < HISTLEN - 1; i++){
         printf("%d: %s\n",i ,history[i]);
     }
-}
+} 
 
 int debug =0;
 void executePipe(cmdLine * pCmdLine){
@@ -108,10 +110,33 @@ void execute(cmdLine *pCmdLine){
         freeCmdLines(pCmdLine);
         return;
     }
-    if (!strcmp("!!",pCmdLine->arguments[0]) ){
-        printHistory();
-        freeCmdLines(pCmdLine);
-        return;
+    if (!strcmp("!!",pCmdLine->arguments[0])){
+        if(!oldest){
+           fprintf(stderr,"first command, cannot excute previous %d\n",errno);     
+        }
+        else{
+            excuteLastCommand(1);
+            freeCmdLines(pCmdLine);
+            return;
+        }
+    }
+    if (!strncmp("!",pCmdLine->arguments[0],1)){
+        if(!oldest){
+            fprintf(stderr,"first command, cannot excute previous %d\n",errno);     
+        }
+        else{
+            char temp[256];
+            //get all the string apprat from the first letter
+            strncpy(temp, pCmdLine->arguments[0] + 1, strlen(pCmdLine->arguments[0]) - 1);
+            int n = atoi(temp);
+            if(n >= oldest || n < 1 || n > HISTLEN)
+                fprintf(stderr,"didnt invoke that amount of commands %d\n",errno);
+            else{
+                excuteLastCommand(n);
+                freeCmdLines(pCmdLine);
+                return;
+            }
+        }
     }
     if (pCmdLine->next != NULL){
         executePipe(pCmdLine);
@@ -161,6 +186,20 @@ void execute(cmdLine *pCmdLine){
             waitpid(pid,&status,0); // waitpid() functions shall obtain status information of child when available , return pid of the child and stored the status at the adress given
             }                        // 0 <==> (exit(0) or main end or process terminated)
             freeCmdLines(pCmdLine);
+    }
+}
+
+void excuteLastCommand(int n){
+    cmdLine* cmdLine;
+    free(history[0]);
+    history[0] = malloc(sizeof(history[n]));
+    strcpy(history[0], history[n]);    
+    fprintf(stderr,"%s",history[0]);
+    if ((cmdLine = parseCmdLines(history[0]))!= NULL ){
+        execute(cmdLine);
+    }
+    else{
+        fprintf(stdout,"%s\n","command issues");
     }
 }
 
