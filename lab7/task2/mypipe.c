@@ -30,8 +30,8 @@ int main(int argc, char **argv){
 		dup(pipefd[1]);  /* dup copy fd to lowest fd avaliable and its stdout since it has been closed */
 		/* now stdout is the write end of the pipe */
 		close(pipefd[1]);
-		char* argv[3] = {"ls", "-l", 0};
-		execvp(argv[0], argv);
+		char* my_argv[3] = {"ls", "-l", 0};
+		execvp(my_argv[0], my_argv);
         _exit(0);
 	} 
 	if(cpid1>0) {            /* Parent writes argv[1] to pipe */
@@ -46,8 +46,8 @@ int main(int argc, char **argv){
 			close(stdin);
 			dup(pipefd[0]);
 			close(pipefd[0]);
-			char* argv[4] = {"tail", "-n","2", 0};
-			execvp(argv[0], argv);
+			char* my_argv[5] = {"tail", "-n","2","in.txt" , 0};
+			execvp(my_argv[0], my_argv);
         	_exit(0);
 		} 
 		
@@ -55,7 +55,8 @@ int main(int argc, char **argv){
 			close(pipefd[0]);
 			waitpid(cpid1,&ret_val,0);		/* Wait for child */
 			waitpid(cpid2,&ret_val,0);		/* Wait for child */
-			exit(EXIT_SUCCESS);
+			exit(0);
 		}
 	}
+	return 0;
 }
