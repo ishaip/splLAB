@@ -8,7 +8,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-#define HISTLEN 20
+#define HISTLEN 4
 
 char* history[HISTLEN];
 int oldest = -1;
@@ -220,7 +220,7 @@ int main(int argc, char** argv) {
         getcwd(buf,PATH_MAX); // get current working directory
         printf("%s>",buf);
         char* ret_val = fgets(command,2048,stdin);
-        //printf("hellow %s", ret_val);
+
         free(history[HISTLEN - 1]);
         for (int i = HISTLEN - 2; i >= 0; i--){
             history[i + 1] = history[i];

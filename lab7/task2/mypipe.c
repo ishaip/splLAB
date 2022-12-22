@@ -28,7 +28,7 @@ int main(int argc, char **argv){
 	}
 
 	if (child_pid1 == 0) {    /* Child reads from pipe */
-		close(stdout);
+		close((int)stdout);
 		dup(pipefd[1]);  
 		close(pipefd[1]);
 		char* my_argv[3] = {"ls", "-l", 0};
@@ -44,10 +44,10 @@ int main(int argc, char **argv){
 		}
 
 		if (child_pid2 == 0) {    /* Child reads from pipe */
-			close(stdin);
+			close((int) stdin);
 			dup(pipefd[0]);
 			close(pipefd[0]);
-			char* my_argv[5] = {"tail", "-n","2","in.txt" , 0};		//do we need this to be an adress?
+			char* my_argv[5] = {"tail", "-n","2","in.txt", 0};		//do we need this to be an adress?
 			execvp(my_argv[0], my_argv);
         	_exit(0);
 		} 

@@ -56,8 +56,6 @@ void executePipe(cmdLine * pCmdLine){
     }
     close(pipefd[0]);
     waitpid(pid, &status, 0);
-    // waitpid(pid2, &status, 0);
-    
 }
 
 void execute(cmdLine *pCmdLine){
