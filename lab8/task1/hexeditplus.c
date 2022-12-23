@@ -46,45 +46,48 @@ FunDesc fun_desc[]= {
 };
 
 void debugMode (state* s){
-    if(s-> debug_mode)
-        printf("debug flag now off\n");
-    else
-        printf("debug flag now on\n");
-    s-> debug_mode = !s-> debug_mode;
+  if(s-> debug_mode)
+      printf("debug flag now off\n");
+  else
+      printf("debug flag now on\n");
+  s-> debug_mode = !s-> debug_mode;
 }
 
 void setName (state* s){
-    printf("enter file name: \n");
-    scanf("%s", s->file_name);
-    if(s-> debug_mode)
-        printf("Debug: file name set to %s \n", s->file_name);
+  printf("enter file name: \n");
+  scanf("%s", s->file_name);
+  // https://stackoverflow.com/questions/7898215/how-to-clear-input-buffer-in-c
+  int c;
+  while((c = getchar()) != '\n' && c!=EOF);   //clear out the stdin file 
+  if(s-> debug_mode)
+    printf("Debug: file name set to %s \n", s->file_name);
 }
 
 void setSize (state* s){
-    printf("enter a number any number: \n");
-    int option = fgetc(stdin);
-    fgetc(stdin);
-    option = option -'0';
-    if(option == 1 || option == 2 || option == 3){
-        s->unit_size = option;
-        if(s-> debug_mode)
-            printf("Debug: set size to %d \n", option);
-    }
-    else
-        printf("dude this isn't 1 or 2 or 4 \n");
+  printf("enter a number any number: \n");
+  int option = fgetc(stdin);
+  fgetc(stdin);
+  option = option -'0';
+  if(option == 1 || option == 2 || option == 4){
+    s->unit_size = option;
+    if(s-> debug_mode)
+      printf("Debug: set size to %d \n", option);
+  }
+  else
+    printf("dude this isn't 1 or 2 or 4 \n");
 }
 
 
 void loadMem (state* s){
-  /*if(s->file_name[0] == 0){
-    printf("dile name has no value\n");
+  if(s->file_name[0] == 0){
+    printf("file name has no value\n");
     return;
   }
   FILE* myfile = fopen(s->file_name, "r+");
   if(myfile == NULL){
     printf("Wrong file name\n");
     return;
-  }*/
+  }
   printf("enter location in hex\n");    //stiil not and hex
   char location[10000];
   char * length = "";
