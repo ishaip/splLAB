@@ -1,6 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <elf.h>
+#include <fcntl.h> 
+#include <errno.h> 
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+
+#define SEEK_START  0
 
 typedef struct {
   char debug_mode;
@@ -8,11 +17,7 @@ typedef struct {
   int unit_size;
   unsigned char mem_buf[10000];
   size_t mem_count;
-  /*
-   .
-   .
-   Any additional fields you deem necessary
-  */
+  char display_mode;
 } state;
 
 typedef struct fun_desc{
@@ -20,6 +25,7 @@ typedef struct fun_desc{
   void (*fun)(state*);
 }FunDesc;
 
+// void printDisplay(state* s, char c);
 void debugMode (state* s);
 void setName (state* s);
 void setSize (state* s);
@@ -45,22 +51,28 @@ FunDesc fun_desc[]= {
   {NULL,NULL}
 };
 
+// void printDisplay(state* s, int i){
+//   if(s->display_mode)
+//     printf("\n%d", c);
+//   else
+//     printf("\n%X", c);
+// }
+
 void debugMode (state* s){
-  if(s-> debug_mode)
-      printf("debug flag now off\n");
-  else
-      printf("debug flag now on\n");
-  s-> debug_mode = !s-> debug_mode;
+    if(s-> debug_mode)
+        printf("debug flag now off\n");
+    else
+        printf("debug flag now on\n");
+    s-> debug_mode = !s-> debug_mode;
 }
 
 void setName (state* s){
-  printf("enter file name: \n");
-  scanf("%s", s->file_name);
-  // https://stackoverflow.com/questions/7898215/how-to-clear-input-buffer-in-c
-  int c;
-  while((c = getchar()) != '\n' && c!=EOF);   //clear out the stdin file 
-  if(s-> debug_mode)
-    printf("Debug: file name set to %s \n", s->file_name);
+    printf("enter file name: \n");
+    scanf("%s", s->file_name);
+    int c;
+    while((c = getchar()) != '\n' && c!=EOF);
+    if(s-> debug_mode)
+        printf("Debug: file name set to %s \n", s->file_name);
 }
 
 void setSize (state* s){
@@ -69,16 +81,16 @@ void setSize (state* s){
   fgetc(stdin);
   option = option -'0';
   if(option == 1 || option == 2 || option == 4){
-    s->unit_size = option;
-    if(s-> debug_mode)
-      printf("Debug: set size to %d \n", option);
+      s->unit_size = option;
+      if(s-> debug_mode)
+          printf("Debug: set size to %d \n", option);
   }
   else
-    printf("dude this isn't 1 or 2 or 4 \n");
+      printf("dude this isn't 1 or 2 or 4 \n");
 }
 
 
-void loadMem (state* s){
+void loadMem (state* s){ //todo
   if(s->file_name[0] == 0){
     printf("file name has no value\n");
     return;
@@ -88,25 +100,118 @@ void loadMem (state* s){
     printf("Wrong file name\n");
     return;
   }
-  printf("enter location in hex\n");    //stiil not and hex
-  char location[10000];
-  char * length = "";
+  printf("enter location, length \n");    //assuming location is decimal
+  char buffer[10000];
+  fgets(buffer,100000,stdin);
 
-  fgets(location,100000,stdin);
-  sscanf(length,"%s");
+  int location;
+  int length;
+  sscanf(buffer,"%X %d", &location, &length);
+  // int c;
+  // while((c = getchar()) != '\n' && c!=EOF);
 
+  fseek(myfile,location, SEEK_START);
+  fread(s->mem_buf, s->unit_size, length, myfile);
+  fclose(myfile);
+  printf("Loaded %d units into memory", length);
 }
+
 void displayMode (state* s){
-    printf("not emplemented\n");
+  if(s->display_mode)
+      printf("display mode now off\n");
+  else
+      printf("display mode now on\n");
+  s-> display_mode = !s-> display_mode;
 }
+
+
+
 void memoryDesplay (state* s){
-    printf("not emplemented\n");
+  printf("enter address, u \n");    
+  char buffer[10000];
+  fgets(buffer,100000,stdin);
+
+  int address;
+  int u;
+  sscanf(buffer,"%X %d", &address, &u);
+  // int c;
+  // while((c = getchar()) != '\n' && c!=EOF);
+
+  if(s->file_name[0] == 0){
+    printf("file name has no value\n");
+    return;
+  }
+  int currentfd = -2;
+  currentfd = open(s->file_name, O_RDWR);
+
+  if(address == 0)
+    for(int i = 0; i < u; i++)
+    {
+      for(int j = s->unit_size-1; j>=0 ; j--)
+      {
+        if(s->display_mode)
+          printf("%d", s->mem_buf[j+(i*s->unit_size)]);
+        else
+          printf("%X", s->mem_buf[j+(i*s->unit_size)]);
+      }
+      printf("\n");
+    }
+  else
+  {
+    char *map_start;
+    map_start = mmap((void*)(address), (u*s->unit_size),PROT_READ|PROT_WRITE, MAP_PRIVATE, currentfd, 0);
+    for(int i = 0; i<(u*s->unit_size); i++)
+    {
+      printf("\n %s", map_start+(i*4));
+    }
+  }
 }
+
 void saveFiles (state* s){
-    printf("not emplemented\n");
+  int source_add = 0;
+  int target_loc = 0;
+  int length =0;
+  printf("please entry source-address, target, length: \n");
+  char buffer[10000];
+  fgets(buffer,100000,stdin);
+  sscanf(buffer,"%X %X %d", &source_add, &target_loc, &length);
+
+  FILE* myfile = fopen(s->file_name, "w+");
+  if(myfile == NULL){
+    printf("Wrong file name\n");
+    return;
+  }
+  if(source_add == 0)
+  {
+    fseek(myfile,target_loc,SEEK_SET);
+    fwrite(s->mem_buf,s->unit_size,length,myfile);
+    fclose(myfile);
+  }
+  else
+  {
+    fseek(myfile,target_loc,SEEK_SET);
+    fwrite(s->mem_buf,s->unit_size,length,myfile);
+    fclose(myfile);
+  }
+
+  printf("Loaded %d units into memory", length);
 }
 void memoryModify (state* s){
-    printf("not emplemented\n");
+  int location = 0;
+  // int val = 0;
+  char val[s->unit_size];
+  printf("please entry location, val: \n");
+  char buffer[10000];
+  fgets(buffer,100000,stdin);
+  sscanf(buffer,"%X %s", &location, val);
+  if(s->debug_mode)
+    printf("the location is: %X\n the value is: %s \n", location, val);
+
+  for(int i=0; i<s->unit_size; i++)
+  {
+    s->mem_buf[location+i] = val[i]- '0';
+  }
+  // s->mem_buf[location] = val;
 }
 
 
@@ -116,24 +221,12 @@ void quit(state* s){
     exit(0);
 }
 
-
-
-// char* map(char *array, int array_length, void (*f) (state*)){
-//   char* mapped_array = (char*)(malloc(array_length*sizeof(char)));
-//   for(int i = 0; i < array_length; i++ ){
-//     mapped_array[i] = f(array[i]);
-//   }
-//   free(array);
-//   return mapped_array;
-// }
-
-
 int main(int argc, char **argv){
   //the state we are going to be using
   state *s = malloc(sizeof(state));
   s->debug_mode = 0;
   s->unit_size = 1;
-
+  s->display_mode = 0;
   int num_of_func = 0;
 
   for( int i = 0; fun_desc[i].name != NULL; i++)
@@ -141,9 +234,12 @@ int main(int argc, char **argv){
 
   while(1){
     if(s->debug_mode)
-        printf("unit_size, file_name, and mem_count\n");
-
-    printf("Please choose a function: \n");
+    {
+        printf("\nunit_size is: %d \n", s->unit_size);
+        printf("file_name: %s \n", s->file_name);
+        printf("mem_count is: %d \n", s->mem_count);
+    }
+    printf("\nPlease choose a function: \n");
     //print all the avalable options
     for( int i = 0; fun_desc[i].name != NULL; i++)
       printf("%d)  %s\n", i, fun_desc[i].name);
