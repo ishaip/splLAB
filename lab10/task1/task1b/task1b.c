@@ -19,9 +19,9 @@ Elf32_Ehdr *header; /* this will point to the header structure */
 int LoadFile(char*);
 void examineFile(char*);
 void printProgramHeaders();
-char* convertType(int);
-char* convertFlg(int);
-int convertFlg2(int flg);
+char* mapping_type_to_string(int);
+char* mapping_to_writeRead(int);
+int mapping_to_protection(int flg);
 
 
 
@@ -54,63 +54,65 @@ int foreach_phdr(void *map_start, void (*func)(Elf32_Phdr *,int), int arg)
     }
 }
 
-void funcProgramHeader(Elf32_Phdr* entry, int args){
-
+void funcProgramHeader(Elf32_Phdr* entry, int args)
+{
     printf("%s\t\t%#08x\t%#08x\t%#10.08x\t%#07x\t%#07x\t%s\t%#-6.01x\n",
-        convertType(entry->p_type),entry->p_offset,entry->p_vaddr,entry->p_paddr,entry->p_filesz,entry->p_memsz,convertFlg(entry->p_flags),entry->p_align);
+        mapping_type_to_string(entry->p_type),entry->p_offset,entry->p_vaddr,entry->p_paddr,entry->p_filesz,entry->p_memsz,mapping_to_writeRead(entry->p_flags),entry->p_align);
     if(entry->p_type == PT_LOAD)
     {
-        int convertedFlag = convertFlg2(entry -> p_flags);
+        int convertedFlag = mapping_to_protection(entry -> p_flags);
         printf("the flag is: %d", convertedFlag);
         printf("\n");
-
-    }
-    // if ((map_start = mmap((uint32_t*)(entry->p_vaddr), entry->p_memsz, entry->p_flags, MAP_SHARED, currFD, entry->p_offset)) == MAP_FAILED )
-    // {
-    //   perror("mmap failed");
-    //   exit(-1);
-    // }
-}
-
-char* convertType(int type){
-    switch (type){
-        case PT_NULL: return "NULL";
-        case PT_LOAD: return "LOAD";
-        case PT_DYNAMIC: return "DYNAMIC";
-        case PT_INTERP: return "INTERP";
-        case PT_NOTE: return "NOTE";
-        case PT_SHLIB: return "SHLIB";
-        case PT_PHDR: return "PHDR";
-        case PT_TLS: return "TLS";
-        case PT_NUM: return "NUM";
-        case PT_GNU_EH_FRAME: return "GNU_EH_FRAME";
-        case PT_GNU_STACK: return "GNU_STACK";
-        case PT_GNU_RELRO: return "GNU_RELRO";
-        case PT_SUNWBSS: return "SUNWBSS";
-        case PT_SUNWSTACK: return "SUNWSTACK";
-        case PT_HIOS: return "HIOS";
-        case PT_LOPROC: return "LOPROC";
-        case PT_HIPROC: return "HIPROC"; 
-        default:return "Unknown";
     }
 }
 
-char* convertFlg(int flg){
-    switch (flg){
-        case 0x004: return "R";
-        case 0x005: return "R E";
-        case 0x006: return "RW";
-        default:return "Unknown";
-    }
+char* mapping_type_to_string(int flag){
+        if (flag == PT_NULL) return "NULL";
+        if (flag == PT_LOAD) return "LOAD";
+        if (flag == PT_DYNAMIC) return "DYNAMIC";
+        if (flag == PT_INTERP) return "INTERP";
+        if (flag == PT_NOTE) return "NOTE";
+        if (flag == PT_SHLIB) return "SHLIB";
+        if (flag == PT_PHDR) return "PHDR";
+        if (flag == PT_TLS) return "TLS";
+        if (flag == PT_NUM) return "NUM";
+        if (flag == PT_GNU_EH_FRAME) return "GNU_EH_FRAME";
+        if (flag == PT_GNU_STACK) return "GNU_STACK";
+        if (flag == PT_GNU_RELRO) return "GNU_RELRO";
+        if (flag == PT_SUNWBSS) return "SUNWBSS";
+        if (flag == PT_SUNWSTACK) return "SUNWSTACK";
+        if (flag == PT_HIOS) return "HIOS";
+        if (flag == PT_LOPROC) return "LOPROC";
+        if (flag == PT_HIPROC) return "HIPROC"; 
+    return "ERROR";
+
 }
-int convertFlg2(int flg){
-    switch (flg){
-        case 0x004: return PROT_READ;
-        case 0x005: return PROT_READ | PROT_EXEC;
-        case 0x006: return PROT_READ | PROT_WRITE;
-        default:return -1;
-    }
+
+char* mapping_to_writeRead(int flag){
+    if(flag == 0) return "";
+    if(flag == 1) return "E";
+    if(flag == 2) return "W";
+    if(flag == 3) return "WE";
+    if(flag == 4) return "R";
+    if(flag == 5) return "RE";
+    if(flag == 6) return "RW";
+    if(flag == 7) return "RWE";
+    return "ERROR";
 }
+
+//maping the number of flag to the correct permession
+int mapping_to_protection(int flag){
+    if(flag == 0) return 0;
+    if(flag == 1) return PROT_EXEC;
+    if(flag == 2) return PROT_WRITE;
+    if(flag == 3) return PROT_EXEC | PROT_EXEC;
+    if(flag == 4) return PROT_READ;
+    if(flag == 5) return PROT_READ | PROT_EXEC;
+    if(flag == 6) return PROT_READ | PROT_WRITE;
+    if(flag == 7) return PROT_READ | PROT_WRITE | PROT_EXEC;
+    return -1;
+}
+
 int main(int argc, char **argv){
     if(LoadFile(argv[1])==-1)
     {

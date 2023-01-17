@@ -47,21 +47,23 @@ int LoadFile(char* filename){     //reading material
 
 int foreach_phdr(void *map_start, void (*func)(Elf32_Phdr *,int), int arg)
 {
+    printf("%s\t\t%s\t\t%s\t%s\t%s\t%s\t%s\t%s\n",
+    "type", "offset","virtAddr","physAddr","filesiz","memsiz","flg","align");
     Elf32_Ehdr *header = (Elf32_Ehdr *) map_start;
     for (size_t i = 0; i < header->e_phnum; i++)
     {
     		Elf32_Phdr* entry = map_start+header->e_phoff+(i* header->e_phentsize);
             func(entry, arg);
     }
+    return 1;
 }
 
 void load_phdr(Elf32_Phdr *phdr, int fd)
 {
-
     printf("%s\t\t%#08x\t%#08x\t%#10.08x\t%#07x\t%#07x\t%s\t%#-6.01x\n",
         mapping_type_to_string(phdr->p_type),phdr->p_offset,phdr->p_vaddr,phdr->p_paddr,phdr->p_filesz,phdr->p_memsz,mapping_to_writeRead(phdr->p_flags),phdr->p_align);
     if(phdr->p_type == PT_LOAD)
-    {  
+    {  //from reading material
         void *vadd = (void *)(phdr -> p_vaddr & 0xfffff000);
         int offset = phdr -> p_offset & 0xfffff000;
         int padding = phdr -> p_vaddr & 0xfff;
@@ -74,25 +76,25 @@ void load_phdr(Elf32_Phdr *phdr, int fd)
     }
 }
 
-
+//mapping functions in order to ordnize the other functions
 char* mapping_type_to_string(int flag){
-        if (flag == PT_NULL) return "NULL";
-        if (flag == PT_LOAD) return "LOAD";
-        if (flag == PT_DYNAMIC) return "DYNAMIC";
-        if (flag == PT_INTERP) return "INTERP";
-        if (flag == PT_NOTE) return "NOTE";
-        if (flag == PT_SHLIB) return "SHLIB";
-        if (flag == PT_PHDR) return "PHDR";
-        if (flag == PT_TLS) return "TLS";
-        if (flag == PT_NUM) return "NUM";
-        if (flag == PT_GNU_EH_FRAME) return "GNU_EH_FRAME";
-        if (flag == PT_GNU_STACK) return "GNU_STACK";
-        if (flag == PT_GNU_RELRO) return "GNU_RELRO";
-        if (flag == PT_SUNWBSS) return "SUNWBSS";
-        if (flag == PT_SUNWSTACK) return "SUNWSTACK";
-        if (flag == PT_HIOS) return "HIOS";
-        if (flag == PT_LOPROC) return "LOPROC";
-        if (flag == PT_HIPROC) return "HIPROC"; 
+    if (flag == PT_NULL) return "NULL";
+    if (flag == PT_LOAD) return "LOAD";
+    if (flag == PT_DYNAMIC) return "DYNAMIC";
+    if (flag == PT_INTERP) return "INTERP";
+    if (flag == PT_NOTE) return "NOTE";
+    if (flag == PT_SHLIB) return "SHLIB";
+    if (flag == PT_PHDR) return "PHDR";
+    if (flag == PT_TLS) return "TLS";
+    if (flag == PT_NUM) return "NUM";
+    if (flag == PT_GNU_EH_FRAME) return "GNU_EH_FRAME";
+    if (flag == PT_GNU_STACK) return "GNU_STACK";
+    if (flag == PT_GNU_RELRO) return "GNU_RELRO";
+    if (flag == PT_SUNWBSS) return "SUNWBSS";
+    if (flag == PT_SUNWSTACK) return "SUNWSTACK";
+    if (flag == PT_HIOS) return "HIOS";
+    if (flag == PT_LOPROC) return "LOPROC";
+    if (flag == PT_HIPROC) return "HIPROC"; 
     return "ERROR";
 
 }
@@ -109,7 +111,6 @@ char* mapping_to_writeRead(int flag){
     return "ERROR";
 }
 
-//maping the number of flag to the correct permession
 int mapping_to_protection(int flag){
     if(flag == 0) return 0;
     if(flag == 1) return PROT_EXEC;
@@ -128,18 +129,18 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
     header = (Elf32_Ehdr *) map_start;
-    if(strncmp((char*)header->e_ident,(char*)ELFMAG, 4)==0) //chech if ELF file
+    if(strncmp((char*)header->e_ident,(char*)ELFMAG, 4)==0) //check if ELF file
     {    
         foreach_phdr(map_start, load_phdr, currFD);
         startup(argc-1, argv+1, (void *)(header->e_entry));
     }
-     else
-     {
+    else
+    {
         printf("This is not ELF file\n");
         //clear the map function allocated memory "un-maping"
         munmap(map_start, fd_stat.st_size); 
         close(currFD); 
         currFD=-1;
-     }
+    }
     return 0;
 }
